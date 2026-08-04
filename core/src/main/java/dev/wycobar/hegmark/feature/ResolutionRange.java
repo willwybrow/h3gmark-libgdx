@@ -1,17 +1,29 @@
 package dev.wycobar.hegmark.feature;
 
-public record ResolutionRange(int minimum, int maximum) {
-    public ResolutionRange {
-        if (minimum < 0 || maximum > 15 || minimum > maximum) {
-            throw new IllegalArgumentException("Resolution range must be ordered and within 0 through 15");
-        }
+import dev.wycobar.hegmark.planet.Layer;
+
+public class ResolutionRange {
+    private final Layer minimum;
+    private final Layer maximum;
+
+    public ResolutionRange(Layer minimum, Layer maximum) {
+        this.minimum = Layer.smallerOf(minimum, maximum);
+        this.maximum = Layer.biggerOf(minimum, maximum);
     }
 
-    public boolean contains(int resolution) {
-        return resolution >= minimum && resolution <= maximum;
+    public boolean contains(Layer otherLayer) {
+        return otherLayer.intValue() >= minimum.intValue() && otherLayer.intValue() <= maximum.intValue();
     }
 
-    public boolean contains(ResolutionRange other) {
-        return minimum <= other.minimum && maximum >= other.maximum;
+    public boolean contains(ResolutionRange otherRange) {
+        return minimum.intValue() <= otherRange.minimum.intValue() && maximum.intValue() >= otherRange.maximum.intValue();
+    }
+
+    public Layer minimum() {
+        return this.minimum;
+    }
+
+    public Layer maximum() {
+        return this.maximum;
     }
 }

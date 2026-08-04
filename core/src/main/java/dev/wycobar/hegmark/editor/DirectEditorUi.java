@@ -6,10 +6,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
-import dev.wycobar.hegmark.feature.ElevationFeature;
+import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
+import dev.wycobar.hegmark.feature.elevation.LandFeature;
 import dev.wycobar.hegmark.feature.ResolvedFeatureValue;
-import dev.wycobar.hegmark.planet.CellId;
-import dev.wycobar.hegmark.planet.PlanetGrid;
+import dev.wycobar.hegmark.planet.Layer;
 import dev.wycobar.hegmark.planet.PlanetLatLon;
 import dev.wycobar.hegmark.planet.Planet;
 import dev.wycobar.hegmark.planet.Cell;
@@ -24,7 +24,7 @@ public final class DirectEditorUi implements Disposable {
     private final SpriteBatch batch = new SpriteBatch();
     private final BitmapFont font = new BitmapFont();
     private final Matrix4 projection = new Matrix4();
-    private int displayResolution = 2;
+    private Layer displayResolution = Layer.COUNTRY;
 
     public DirectEditorUi(
         Planet world,
@@ -59,7 +59,7 @@ public final class DirectEditorUi implements Disposable {
         return List.copyOf(buttons);
     }
 
-    public void render(EditorLayout layout, EditorState state, int displayResolution, int renderedCells) {
+    public void render(EditorLayout layout, EditorState state, Layer displayResolution, int renderedCells) {
         this.displayResolution = displayResolution;
         projection.setToOrtho2D(0, 0, layout.width(), layout.height());
         shapes.setProjectionMatrix(projection);
@@ -115,30 +115,18 @@ public final class DirectEditorUi implements Disposable {
         }
         Cell cell = state.selectedCell().orElseThrow();
         PlanetLatLon center = cell.center();
-        ResolvedFeatureValue<Double> elevation = cell.resolvedFeature(elevationFeature);
         int line = 0;
         float spacing = 13.0f;
         draw("SELECTED CELL", x, startY - line++ * spacing);
         draw("ID: " + cell.id().asHexString(), x, startY - line++ * spacing);
         draw("Resolution: " + cell.resolution(), x, startY - line++ * spacing);
         draw(String.format("Lat/Lon: %.3f / %.3f", center.latitudeDegrees(), center.longitudeDegrees()), x, startY - line++ * spacing);
-        draw("Pentagon: " + cell.isPentagon(), x, startY - line++ * spacing);
         draw("Neighbors: " + cell.neighbors().size(), x, startY - line++ * spacing);
         if (cell.parent().isPresent()) draw("Parent: " + cell.parent().orElseThrow().id().asHexString(), x, startY - line++ * spacing);
-        var stored = cell.explicitFeature(elevationFeature);
-        draw(stored.isPresent() ? String.format("Stored: %.0f m", stored.orElseThrow()) : "Stored: none", x, startY - line++ * spacing);
-        draw(elevation.applicable() ? String.format("Effective: %.0f m", elevation.effectiveValue()) : "Effective: not applicable", x, startY - line++ * spacing);
-        draw("Effective source: " + elevation.effectiveSource().name().toLowerCase(), x, startY - line++ * spacing);
-        draw(elevation.applicable() ? String.format("Display: %.0f m", elevation.displayValue()) : "Display: not applicable", x, startY - line++ * spacing);
-        draw("Display source: " + elevation.displaySource().name().toLowerCase(), x, startY - line++ * spacing);
-        draw("Directly editable: " + elevation.directlyEditable(), x, startY - line * spacing);
+        draw(String.format("Effective: %.0f m", elevationFeature.valueAt(cell).orElse(0.0)), x, startY - line++ * spacing);
         line++;
-        draw("Descendant overrides: " + cell.explicitDescendantCount(elevationFeature), x, startY - line++ * spacing);
-        if (elevationFeature.landFeature().isViewableAt(cell.resolution())) {
-            draw("Provided land: " + cell.feature(elevationFeature.landFeature()), x, startY - line * spacing);
-        } else {
-            draw("Provided land: not viewable", x, startY - line * spacing);
-        }
+        draw("Provided land: " + elevationFeature.valueAt(cell), x, startY - line * spacing);
+
     }
 
     private void drawButton(EditorLayout layout, UiButton button) {

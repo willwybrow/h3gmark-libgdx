@@ -1,5 +1,6 @@
 package dev.wycobar.hegmark.feature;
 
+import dev.wycobar.hegmark.feature.elevation.ElevationStyle;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

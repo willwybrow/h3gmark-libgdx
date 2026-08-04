@@ -16,10 +16,8 @@ class CellTest {
         assertEquals(cell.parent().orElseThrow(), cell.parent(3));
         assertTrue(cell.parent().orElseThrow().children().contains(cell));
         assertTrue(cell.neighbors().stream().allMatch(neighbor -> neighbor.planet() == fixture.planet()));
-        assertTrue(cell.disk(1).contains(cell));
-        assertThrows(IllegalArgumentException.class, () -> cell.disk(101));
         assertEquals(cell.id(), fixture.planet().cellAt(cell.center(), 4).id());
-        assertEquals(cell.id(), cell.geometry().cellId());
+        assertEquals(cell.center(), cell.geometry().center());
     }
 
     @Test

@@ -1,12 +1,12 @@
-package dev.wycobar.hegmark.feature;
+package dev.wycobar.hegmark.feature.elevation;
 
 import dev.wycobar.hegmark.planet.PlanetLatLon;
 import dev.wycobar.hegmark.planet.PlanetModel;
 
-public final class ElevationGenerator {
-    public static final int ALGORITHM_VERSION = 1;
+final class ElevationGenerator {
+    static final int ALGORITHM_VERSION = 1;
 
-    public double generate(PlanetModel planet, long stableCellSeed, PlanetLatLon center) {
+    double generate(PlanetModel planet, long stableCellSeed, PlanetLatLon center) {
         double latitude = Math.toRadians(center.latitudeDegrees());
         double longitude = Math.toRadians(center.longitudeDegrees());
         double phase = phase(planet.worldSeed());

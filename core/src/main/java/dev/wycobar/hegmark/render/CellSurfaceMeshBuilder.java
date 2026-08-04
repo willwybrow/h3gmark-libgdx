@@ -3,8 +3,8 @@ package dev.wycobar.hegmark.render;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
-import dev.wycobar.hegmark.feature.ElevationFeature;
-import dev.wycobar.hegmark.feature.ElevationStyle;
+import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
+import dev.wycobar.hegmark.feature.elevation.ElevationStyle;
 import dev.wycobar.hegmark.feature.ResolvedFeatureValue;
 import dev.wycobar.hegmark.feature.RgbColor;
 import dev.wycobar.hegmark.planet.CartesianPoint;
@@ -46,10 +46,7 @@ public final class CellSurfaceMeshBuilder {
     private void appendCell(FloatArray fills, FloatArray lines, CellId cell, boolean selected) {
         Cell domainCell = world.cell(cell);
         CellGeometry geometry = domainCell.geometry();
-        ResolvedFeatureValue<Double> elevation = domainCell.resolvedFeature(elevationFeature);
-        RgbColor rgb = elevation.applicable()
-            ? style.color(elevation.displayValue(), planet.seaLevelMeters())
-            : new RgbColor(0.25f, 0.25f, 0.28f);
+        RgbColor rgb = style.color(elevationFeature.valueAt(domainCell).orElse(planet.seaLevelMeters()), planet.seaLevelMeters());
         float fillColor = Color.toFloatBits(rgb.red(), rgb.green(), rgb.blue(), 1.0f);
         float lineColor = selected
             ? Color.toFloatBits(1.0f, 0.85f, 0.1f, 1.0f)

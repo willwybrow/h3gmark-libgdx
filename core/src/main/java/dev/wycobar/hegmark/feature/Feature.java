@@ -1,23 +1,26 @@
 package dev.wycobar.hegmark.feature;
 
+import dev.wycobar.hegmark.planet.Cell;
+import dev.wycobar.hegmark.planet.Layer;
+
 import java.util.Optional;
 
-public interface Feature<T> {
+interface Feature<T> {
     String id();
 
     String name();
-
-    Class<T> valueType();
 
     ResolutionRange viewableRange();
 
     Optional<ResolutionRange> settableRange();
 
-    default boolean isViewableAt(int resolution) {
+    Optional<T> valueAt(Cell cell);
+
+    default boolean isViewableAt(Layer resolution) {
         return viewableRange().contains(resolution);
     }
 
-    default boolean isSettableAt(int resolution) {
+    default boolean isSettableAt(Layer resolution) {
         return settableRange().map(range -> range.contains(resolution)).orElse(false);
     }
 }

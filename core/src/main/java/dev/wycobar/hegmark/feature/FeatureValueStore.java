@@ -8,17 +8,10 @@ import java.util.List;
 import dev.wycobar.hegmark.planet.Cell;
 
 public interface FeatureValueStore {
-    <T> Optional<T> value(StoredFeature<T> feature, CellId cell);
+    Double put(StoredFeature<Double> feature, Cell cell, Double value);
 
-    <T> void put(StoredFeature<T> feature, CellId cell, T value);
+    Double getDouble(StoredFeature<Double> feature, Cell cell);
 
-    void remove(StoredFeature<?> feature, CellId cell);
-
-    <T> Map<CellId, T> values(StoredFeature<T> feature);
-
-    List<ExplicitFeatureValue<?>> values(CellId cell);
-
-    <T> Map<CellId, T> descendantValues(StoredFeature<T> feature, Cell root);
-
-    int size();
+    record Key(StoredFeature<?> feature, CellId cell) {
+    }
 }

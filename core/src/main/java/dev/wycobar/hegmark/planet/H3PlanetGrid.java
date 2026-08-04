@@ -30,7 +30,7 @@ public final class H3PlanetGrid implements PlanetGrid {
     @Override
     public CellGeometry geometry(CellId cell) {
         List<PlanetLatLon> boundary = h3.cellToBoundary(cell.value()).stream().map(this::coordinate).toList();
-        return new CellGeometry(cell, resolution(cell), center(cell), boundary, isPentagon(cell));
+        return new CellGeometry(center(cell), boundary);
     }
 
     @Override

@@ -37,7 +37,7 @@ The complete grid must never be materialized at fine resolutions. Work is limite
 `Cell` is the domain entity representing one spatial location within a planet. It is created on demand and exposes:
 
 - its `CellId`, resolution, center, and geometry;
-- optional parent, children, neighbors, and bounded disks as `Cell` objects;
+- optional parent, children, and neighbors as `Cell` objects;
 - explicitly stored features on that exact cell;
 - effective and display values for stored features;
 - computed provided features;

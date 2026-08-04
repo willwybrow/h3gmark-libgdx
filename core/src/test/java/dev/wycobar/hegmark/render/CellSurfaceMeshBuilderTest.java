@@ -1,6 +1,6 @@
 package dev.wycobar.hegmark.render;
 
-import dev.wycobar.hegmark.feature.ElevationStyle;
+import dev.wycobar.hegmark.feature.elevation.ElevationStyle;
 import dev.wycobar.hegmark.planet.CellGeometry;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.H3PlanetGrid;

@@ -13,14 +13,14 @@ import dev.wycobar.hegmark.editor.PlanetRayPicker;
 import dev.wycobar.hegmark.editor.SelectionProjector;
 import dev.wycobar.hegmark.editor.VisibleCellSelector;
 import dev.wycobar.hegmark.feature.FeatureChangeBus;
-import dev.wycobar.hegmark.feature.InMemoryFeatureDisplayCache;
-import dev.wycobar.hegmark.feature.ElevationFeature;
-import dev.wycobar.hegmark.feature.ElevationStyle;
+import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
+import dev.wycobar.hegmark.feature.elevation.ElevationStyle;
 import dev.wycobar.hegmark.feature.InMemoryFeatureValueStore;
 import dev.wycobar.hegmark.feature.FeatureRegistry;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.H3PlanetGrid;
+import dev.wycobar.hegmark.planet.Layer;
 import dev.wycobar.hegmark.planet.PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetLatLon;
 import dev.wycobar.hegmark.planet.PlanetModel;
@@ -53,14 +53,14 @@ public class Main extends ApplicationAdapter {
     @Override
     public void create() {
         orbitCamera = new OrbitCamera();
-        planet = new PlanetModel("Hegmark", 6_400_000.0, 6_200_000.0, 0.0, 0x48a9dL);
+        planet = new PlanetModel("Rinn", 5_994_000.0, 5_994_000.0, 0.0, 0x48a9dL);
         grid = new H3PlanetGrid();
-        ElevationFeature elevationFeature = ElevationFeature.INSTANCE;
-        featureRegistry = new FeatureRegistry(List.of(elevationFeature));
-        FeatureChangeBus changeBus = new FeatureChangeBus();
         InMemoryFeatureValueStore store = new InMemoryFeatureValueStore();
-        InMemoryFeatureDisplayCache displayCache = new InMemoryFeatureDisplayCache();
-        world = new Planet(planet, grid, featureRegistry, store, displayCache, changeBus);
+        ElevationFeature elevationFeature = new ElevationFeature(store);
+        featureRegistry = new FeatureRegistry();
+        featureRegistry.register(elevationFeature);
+        FeatureChangeBus changeBus = new FeatureChangeBus();
+        world = new Planet(planet, grid, featureRegistry, store, changeBus);
         visibleCells = new VisibleCellSelector(grid);
         selectionProjector = new SelectionProjector(grid);
         surfaceRenderer = new CellSurfaceRenderer(world, elevationFeature, new ElevationStyle());
@@ -113,7 +113,7 @@ public class Main extends ApplicationAdapter {
 
         Gdx.gl.glViewport(0, 0, width, height);
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-        ui.render(layout, state, displayResolution, surfaceRenderer.cellCount());
+        ui.render(layout, state, Layer.valueOf(displayResolution), surfaceRenderer.cellCount());
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.math.collision.Ray;
-import dev.wycobar.hegmark.feature.ElevationFeature;
+import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.PlanetGrid;
@@ -128,25 +128,11 @@ public final class EditorInputController extends InputAdapter {
         state.select(cell);
         try {
             if (state.tool() == EditorTool.FILL_GAPS) {
-                if (world.fillGaps(elevationFeature, java.util.List.of(cell), state.paintElevationMeters()) == 1) {
-                    state.setMessage("Filled gaps with " + Math.round(state.paintElevationMeters()) + " m");
-                } else {
-                    state.setMessage("Cell already has that stored value");
-                }
+                state.setMessage("NOT YET IMPLEMENTED");
             } else if (state.tool() == EditorTool.OVERWRITE) {
-                int descendantCount = cell.explicitDescendantCount(elevationFeature);
-                if (descendantCount == 0 || state.isOverwriteConfirmed(cell)) {
-                    int removed = world.overwrite(elevationFeature, cell, state.paintElevationMeters());
-                    state.clearOverwriteConfirmation();
-                    state.setMessage("Overwrote region and removed " + removed + " descendant values");
-                } else {
-                    state.requestOverwriteConfirmation(cell, descendantCount);
-                    rebuildRequested = true;
-                    return;
-                }
+                state.setMessage("ALSO NOT IMPLEMENTED");
             } else if (state.tool() == EditorTool.ERASE) {
-                if (world.erase(elevationFeature, cell)) state.setMessage("Erased direct elevation override");
-                else state.setMessage("Cell has no direct elevation override");
+                state.setMessage("Cell has no direct elevation override");
             }
         } catch (IllegalArgumentException exception) {
             state.setMessage(exception.getMessage());

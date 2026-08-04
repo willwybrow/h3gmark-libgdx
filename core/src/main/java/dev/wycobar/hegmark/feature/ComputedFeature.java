@@ -1,14 +1,10 @@
 package dev.wycobar.hegmark.feature;
 
-import dev.wycobar.hegmark.planet.Cell;
 
-import java.util.Optional;
+public abstract class ComputedFeature<T> implements Feature<T> {
+    protected final StoredFeature<?> computedFrom;
 
-public interface ComputedFeature<T> extends Feature<T> {
-    T compute(Cell cell);
-
-    @Override
-    default Optional<ResolutionRange> settableRange() {
-        return Optional.empty();
+    protected ComputedFeature(StoredFeature<?> computedFrom) {
+        this.computedFrom = computedFrom;
     }
 }

@@ -2,24 +2,23 @@ package dev.wycobar.hegmark.feature;
 
 import dev.wycobar.hegmark.planet.Cell;
 
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public interface StoredFeature<T> extends Feature<T> {
-    T generatedValue(Cell cell);
+public abstract class StoredFeature<T> implements Feature<T> {
 
-    default void validateValue(T value) {
+    protected final FeatureValueStore featureValueStore;
+
+    protected StoredFeature(FeatureValueStore featureValueStore) {
+        this.featureValueStore = featureValueStore;
     }
 
-    default int algorithmVersion() {
-        return 1;
+    public abstract T setAt(Cell cell, T value);
+
+    public final Set<Feature<?>> provides() {
+        return Stream.concat(Stream.of(this), this.additionalFeatures().stream()).collect(Collectors.toUnmodifiableSet());
     }
 
-    default Optional<T> aggregate(Cell cell) {
-        return Optional.empty();
-    }
-
-    default Set<Cell> affectedAggregationCells(FeatureValuesChanged event) {
-        return Set.of();
-    }
+    protected abstract Set<ComputedFeature<?>> additionalFeatures();
 }

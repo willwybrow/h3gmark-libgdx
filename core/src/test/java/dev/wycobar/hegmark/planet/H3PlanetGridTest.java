@@ -31,7 +31,7 @@ class H3PlanetGridTest {
         CellId pentagon = grid.cellsAtResolution(0).stream().filter(grid::isPentagon).findFirst().orElseThrow();
         CellGeometry geometry = grid.geometry(pentagon);
 
-        assertTrue(geometry.pentagon());
+        assertTrue(grid.isPentagon(pentagon));
         assertNotEquals(6, geometry.boundary().size());
         assertNotEquals(6, grid.neighbors(pentagon).size());
     }

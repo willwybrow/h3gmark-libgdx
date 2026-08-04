@@ -1,4 +1,6 @@
-package dev.wycobar.hegmark.feature;
+package dev.wycobar.hegmark.feature.elevation;
+
+import dev.wycobar.hegmark.feature.RgbColor;
 
 public final class ElevationStyle {
     public RgbColor color(double elevationMeters, double seaLevelMeters) {
@@ -12,6 +14,6 @@ public final class ElevationStyle {
     }
 
     private float clamp(float value) {
-        return Math.max(0.0f, Math.min(1.0f, value));
+        return Math.clamp(value, 0.0f, 1.0f);
     }
 }
