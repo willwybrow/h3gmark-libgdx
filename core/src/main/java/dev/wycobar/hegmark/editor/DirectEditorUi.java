@@ -33,8 +33,9 @@ public final class DirectEditorUi implements Disposable {
     }
 
     public List<UiButton> buttons(EditorLayout layout, EditorState state) {
-        float x = layout.panelX() + 18.0f;
-        float width = layout.panelWidth() - 36.0f;
+        float padding = Math.min(18.0f, layout.panelWidth() / 8.0f);
+        float x = layout.panelX() + padding;
+        float width = Math.max(1.0f, layout.panelWidth() - padding * 2.0f);
         float third = (width - 12.0f) / 3.0f;
         List<UiButton> buttons = new ArrayList<>();
         buttons.add(button(UiAction.SELECT_TOOL, "Select", x, 58, third, state.tool() == EditorTool.SELECT, true));
@@ -65,7 +66,7 @@ public final class DirectEditorUi implements Disposable {
         batch.setProjectionMatrix(projection);
         batch.begin();
         font.setColor(Color.WHITE);
-        float x = layout.panelX() + 18.0f;
+        float x = layout.panelX() + Math.min(18.0f, layout.panelWidth() / 8.0f);
         draw("HEGMARK / ELEVATION", x, layout.height() - 20);
         draw("Tools", x, layout.height() - 48);
         draw("Paint value", x, layout.height() - 116);
