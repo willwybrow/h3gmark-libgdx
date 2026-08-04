@@ -2,9 +2,11 @@ package dev.wycobar.hegmark.render;
 
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.MathUtils;
+import dev.wycobar.hegmark.editor.CameraStepPolicy;
 
 public final class OrbitCamera {
     private final PerspectiveCamera camera = new PerspectiveCamera(50.0f, 1.0f, 1.0f);
+    private final CameraStepPolicy stepPolicy = new CameraStepPolicy();
     private float yawDegrees = 35.0f;
     private float pitchDegrees = 20.0f;
     private float distance = 2.8f;
@@ -34,6 +36,12 @@ public final class OrbitCamera {
         float surfaceGap = distance - 1.0f;
         surfaceGap *= 1.0f + amount * 0.15f;
         distance = 1.0f + MathUtils.clamp(surfaceGap, 0.001f, 5.0f);
+        dirty = true;
+    }
+
+    public void rotateLongitude(int resolution, int direction) {
+        if (direction == 0) return;
+        yawDegrees += Math.signum(direction) * stepPolicy.longitudeDegrees(resolution);
         dirty = true;
     }
 

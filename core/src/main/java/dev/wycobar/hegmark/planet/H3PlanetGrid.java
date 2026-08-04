@@ -80,6 +80,11 @@ public final class H3PlanetGrid implements PlanetGrid {
     }
 
     @Override
+    public int maximumResolution() {
+        return 15;
+    }
+
+    @Override
     public long stableSeed(CellId cell, long worldSeed, String featureId, int algorithmVersion) {
         long hash = worldSeed ^ cell.value();
         hash = Long.rotateLeft(hash, 21) ^ featureId.hashCode();

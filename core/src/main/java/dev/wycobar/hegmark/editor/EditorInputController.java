@@ -4,12 +4,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.math.collision.Ray;
-import dev.wycobar.hegmark.feature.ElevationEditor;
+import dev.wycobar.hegmark.feature.ElevationFeature;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetLatLon;
 import dev.wycobar.hegmark.planet.PlanetModel;
+import dev.wycobar.hegmark.planet.Planet;
+import dev.wycobar.hegmark.planet.Cell;
 import dev.wycobar.hegmark.render.OrbitCamera;
 
 import java.util.Optional;
@@ -22,8 +24,8 @@ public final class EditorInputController extends InputAdapter {
     private final OrbitCamera orbitCamera;
     private final PlanetRayPicker picker;
     private final PlanetModel planet;
-    private final PlanetGrid grid;
-    private final ElevationEditor elevationEditor;
+    private final Planet world;
+    private final ElevationFeature elevationFeature;
     private final IntSupplier displayResolution;
     private boolean orbiting;
     private int lastX;
@@ -37,8 +39,8 @@ public final class EditorInputController extends InputAdapter {
         OrbitCamera orbitCamera,
         PlanetRayPicker picker,
         PlanetModel planet,
-        PlanetGrid grid,
-        ElevationEditor elevationEditor,
+        Planet world,
+        ElevationFeature elevationFeature,
         IntSupplier displayResolution
     ) {
         this.layout = layout;
@@ -47,8 +49,8 @@ public final class EditorInputController extends InputAdapter {
         this.orbitCamera = orbitCamera;
         this.picker = picker;
         this.planet = planet;
-        this.grid = grid;
-        this.elevationEditor = elevationEditor;
+        this.world = world;
+        this.elevationFeature = elevationFeature;
         this.displayResolution = displayResolution;
     }
 
@@ -91,7 +93,6 @@ public final class EditorInputController extends InputAdapter {
     public boolean scrolled(float amountX, float amountY) {
         if (Gdx.input.getX() >= layout.liveWidth()) return false;
         orbitCamera.zoom(amountY);
-        rebuildRequested = true;
         return true;
     }
 
@@ -123,15 +124,29 @@ public final class EditorInputController extends InputAdapter {
             state.setMessage("No cell under cursor");
             return;
         }
-        CellId cell = grid.cellAt(coordinate.orElseThrow(), displayResolution.getAsInt());
+        Cell cell = world.cellAt(coordinate.orElseThrow(), displayResolution.getAsInt());
         state.select(cell);
         try {
-            if (state.tool() == EditorTool.PAINT) {
-                elevationEditor.paint(cell, state.paintElevationMeters());
-                state.setMessage("Painted " + Math.round(state.paintElevationMeters()) + " m");
+            if (state.tool() == EditorTool.FILL_GAPS) {
+                if (world.fillGaps(elevationFeature, java.util.List.of(cell), state.paintElevationMeters()) == 1) {
+                    state.setMessage("Filled gaps with " + Math.round(state.paintElevationMeters()) + " m");
+                } else {
+                    state.setMessage("Cell already has that stored value");
+                }
+            } else if (state.tool() == EditorTool.OVERWRITE) {
+                int descendantCount = cell.explicitDescendantCount(elevationFeature);
+                if (descendantCount == 0 || state.isOverwriteConfirmed(cell)) {
+                    int removed = world.overwrite(elevationFeature, cell, state.paintElevationMeters());
+                    state.clearOverwriteConfirmation();
+                    state.setMessage("Overwrote region and removed " + removed + " descendant values");
+                } else {
+                    state.requestOverwriteConfirmation(cell, descendantCount);
+                    rebuildRequested = true;
+                    return;
+                }
             } else if (state.tool() == EditorTool.ERASE) {
-                elevationEditor.erase(cell);
-                state.setMessage("Erased direct elevation override");
+                if (world.erase(elevationFeature, cell)) state.setMessage("Erased direct elevation override");
+                else state.setMessage("Cell has no direct elevation override");
             }
         } catch (IllegalArgumentException exception) {
             state.setMessage(exception.getMessage());
@@ -142,7 +157,8 @@ public final class EditorInputController extends InputAdapter {
     private void handle(UiAction action) {
         switch (action) {
             case SELECT_TOOL -> state.setTool(EditorTool.SELECT);
-            case PAINT_TOOL -> state.setTool(EditorTool.PAINT);
+            case FILL_GAPS_TOOL -> state.setTool(EditorTool.FILL_GAPS);
+            case OVERWRITE_TOOL -> state.setTool(EditorTool.OVERWRITE);
             case ERASE_TOOL -> state.setTool(EditorTool.ERASE);
             case ELEVATION_DEEP -> state.setPaintElevationMeters(-1_500.0);
             case ELEVATION_SEA -> state.setPaintElevationMeters(0.0);
@@ -150,7 +166,8 @@ public final class EditorInputController extends InputAdapter {
             case ELEVATION_HIGH -> state.setPaintElevationMeters(2_000.0);
             case DETAIL_LESS -> orbitCamera.zoom(3.0f);
             case DETAIL_MORE -> orbitCamera.zoom(-3.0f);
+            case ROTATE_LEFT -> orbitCamera.rotateLongitude(displayResolution.getAsInt(), -1);
+            case ROTATE_RIGHT -> orbitCamera.rotateLongitude(displayResolution.getAsInt(), 1);
         }
-        rebuildRequested = true;
     }
 }

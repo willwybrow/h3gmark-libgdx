@@ -1,7 +1,8 @@
 package dev.wycobar.hegmark.feature;
 
-public enum ElevationSource {
+public enum FeatureValueSource {
     NOT_APPLICABLE,
     GENERATED,
-    EXPLICIT
+    EXPLICIT,
+    AGGREGATED
 }

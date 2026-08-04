@@ -1,13 +1,12 @@
 package dev.wycobar.hegmark.render;
 
-import dev.wycobar.hegmark.feature.ElevationGenerator;
-import dev.wycobar.hegmark.feature.ElevationResolver;
 import dev.wycobar.hegmark.feature.ElevationStyle;
-import dev.wycobar.hegmark.feature.InMemoryFeatureValueStore;
 import dev.wycobar.hegmark.planet.CellGeometry;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.H3PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetModel;
+import dev.wycobar.hegmark.planet.PlanetGrid;
+import dev.wycobar.hegmark.support.TestPlanetFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,15 +16,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CellSurfaceMeshBuilderTest {
-    private H3PlanetGrid grid;
+    private PlanetGrid grid;
     private CellSurfaceMeshBuilder builder;
 
     @BeforeEach
     void setUp() {
-        grid = new H3PlanetGrid();
-        PlanetModel planet = new PlanetModel("Test", 6_000_000.0, 5_800_000.0, 0.0, 12L);
-        ElevationResolver resolver = new ElevationResolver(grid, new InMemoryFeatureValueStore(), new ElevationGenerator());
-        builder = new CellSurfaceMeshBuilder(grid, planet, resolver, new ElevationStyle());
+        var fixture = TestPlanetFactory.create(12L);
+        grid = fixture.grid();
+        builder = new CellSurfaceMeshBuilder(fixture.planet(), fixture.elevation(), new ElevationStyle());
     }
 
     @Test

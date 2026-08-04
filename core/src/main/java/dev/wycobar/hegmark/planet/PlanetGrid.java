@@ -23,5 +23,7 @@ public interface PlanetGrid {
 
     boolean isPentagon(CellId cell);
 
+    int maximumResolution();
+
     long stableSeed(CellId cell, long worldSeed, String featureId, int algorithmVersion);
 }

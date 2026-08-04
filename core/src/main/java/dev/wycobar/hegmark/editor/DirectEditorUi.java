@@ -6,53 +6,61 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
-import dev.wycobar.hegmark.feature.ElevationResolver;
-import dev.wycobar.hegmark.feature.ResolvedElevation;
+import dev.wycobar.hegmark.feature.ElevationFeature;
+import dev.wycobar.hegmark.feature.ResolvedFeatureValue;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetLatLon;
-import dev.wycobar.hegmark.planet.PlanetModel;
+import dev.wycobar.hegmark.planet.Planet;
+import dev.wycobar.hegmark.planet.Cell;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class DirectEditorUi implements Disposable {
-    private final PlanetGrid grid;
-    private final PlanetModel planet;
-    private final ElevationResolver resolver;
+    private final Planet world;
+    private final ElevationFeature elevationFeature;
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final SpriteBatch batch = new SpriteBatch();
     private final BitmapFont font = new BitmapFont();
     private final Matrix4 projection = new Matrix4();
+    private int displayResolution = 2;
 
-    public DirectEditorUi(PlanetGrid grid, PlanetModel planet, ElevationResolver resolver) {
-        this.grid = grid;
-        this.planet = planet;
-        this.resolver = resolver;
-        font.getData().setScale(1.0f);
+    public DirectEditorUi(
+        Planet world,
+        ElevationFeature elevationFeature
+    ) {
+        this.world = world;
+        this.elevationFeature = elevationFeature;
+        font.getData().setScale(0.8f);
     }
 
     public List<UiButton> buttons(EditorLayout layout, EditorState state) {
         float padding = Math.min(18.0f, layout.panelWidth() / 8.0f);
         float x = layout.panelX() + padding;
         float width = Math.max(1.0f, layout.panelWidth() - padding * 2.0f);
-        float third = (width - 12.0f) / 3.0f;
+        float quarter = (width - 18.0f) / 4.0f;
+        boolean editable = elevationFeature.isSettableAt(displayResolution);
         List<UiButton> buttons = new ArrayList<>();
-        buttons.add(button(UiAction.SELECT_TOOL, "Select", x, 58, third, state.tool() == EditorTool.SELECT, true));
-        buttons.add(button(UiAction.PAINT_TOOL, "Paint", x + third + 6, 58, third, state.tool() == EditorTool.PAINT, true));
-        buttons.add(button(UiAction.ERASE_TOOL, "Erase", x + (third + 6) * 2, 58, third, state.tool() == EditorTool.ERASE, true));
+        buttons.add(button(UiAction.SELECT_TOOL, "Select", x, 38, quarter, state.tool() == EditorTool.SELECT, true));
+        buttons.add(button(UiAction.FILL_GAPS_TOOL, "Fill", x + quarter + 6, 38, quarter, state.tool() == EditorTool.FILL_GAPS, editable));
+        buttons.add(button(UiAction.OVERWRITE_TOOL, "Overwrite", x + (quarter + 6) * 2, 38, quarter, state.tool() == EditorTool.OVERWRITE, editable));
+        buttons.add(button(UiAction.ERASE_TOOL, "Erase", x + (quarter + 6) * 3, 38, quarter, state.tool() == EditorTool.ERASE, editable));
 
         float half = (width - 6.0f) / 2.0f;
-        buttons.add(button(UiAction.ELEVATION_DEEP, "-1500 m", x, 126, half, state.paintElevationMeters() == -1_500.0, true));
-        buttons.add(button(UiAction.ELEVATION_SEA, "0 m", x + half + 6, 126, half, state.paintElevationMeters() == 0.0, true));
-        buttons.add(button(UiAction.ELEVATION_LOW, "+500 m", x, 164, half, state.paintElevationMeters() == 500.0, true));
-        buttons.add(button(UiAction.ELEVATION_HIGH, "+2000 m", x + half + 6, 164, half, state.paintElevationMeters() == 2_000.0, true));
-        buttons.add(button(UiAction.DETAIL_LESS, "Less detail", x, 220, half, false, true));
-        buttons.add(button(UiAction.DETAIL_MORE, "More detail", x + half + 6, 220, half, false, true));
+        buttons.add(button(UiAction.ELEVATION_DEEP, "-1500 m", x, 86, half, state.paintElevationMeters() == -1_500.0, true));
+        buttons.add(button(UiAction.ELEVATION_SEA, "0 m", x + half + 6, 86, half, state.paintElevationMeters() == 0.0, true));
+        buttons.add(button(UiAction.ELEVATION_LOW, "+500 m", x, 122, half, state.paintElevationMeters() == 500.0, true));
+        buttons.add(button(UiAction.ELEVATION_HIGH, "+2000 m", x + half + 6, 122, half, state.paintElevationMeters() == 2_000.0, true));
+        buttons.add(button(UiAction.DETAIL_LESS, "Zoom out", x, 164, half, false, true));
+        buttons.add(button(UiAction.DETAIL_MORE, "Zoom in", x + half + 6, 164, half, false, true));
+        buttons.add(button(UiAction.ROTATE_LEFT, "Rotate left", x, 200, half, false, true));
+        buttons.add(button(UiAction.ROTATE_RIGHT, "Rotate right", x + half + 6, 200, half, false, true));
         return List.copyOf(buttons);
     }
 
     public void render(EditorLayout layout, EditorState state, int displayResolution, int renderedCells) {
+        this.displayResolution = displayResolution;
         projection.setToOrtho2D(0, 0, layout.width(), layout.height());
         shapes.setProjectionMatrix(projection);
         shapes.begin(ShapeRenderer.ShapeType.Filled);
@@ -68,19 +76,31 @@ public final class DirectEditorUi implements Disposable {
         font.setColor(Color.WHITE);
         float x = layout.panelX() + Math.min(18.0f, layout.panelWidth() / 8.0f);
         draw("HEGMARK / ELEVATION", x, layout.height() - 20);
-        draw("Tools", x, layout.height() - 48);
-        draw("Paint value", x, layout.height() - 116);
-        draw("View: grid res " + displayResolution + "  |  " + renderedCells + " cells", x, layout.height() - 210);
-        draw("Editable range: res 2-7", x, layout.height() - 266);
+        draw("Paint value", x, layout.height() - 78);
+        draw("View: grid res " + displayResolution + "  |  " + renderedCells + " cells", x, layout.height() - 238);
+        draw(
+            "View " + elevationFeature.viewableRange().minimum() + "-" + elevationFeature.viewableRange().maximum()
+                + "  |  Set " + elevationFeature.settableRange().orElseThrow().minimum()
+                + "-" + elevationFeature.settableRange().orElseThrow().maximum(),
+            x,
+            layout.height() - 254
+        );
         for (UiButton button : buttons(layout, state)) {
             font.setColor(button.enabled() ? Color.WHITE : Color.GRAY);
             float renderY = layout.height() - button.bounds().y() - button.bounds().height();
             draw(button.label(), button.bounds().x() + 8.0f, renderY + 20.0f);
         }
         font.setColor(Color.WHITE);
-        drawSelection(state, x, layout.height() - 300);
+        drawSelection(state, x, layout.height() - 250);
+        batch.end();
+
+        shapes.begin(ShapeRenderer.ShapeType.Filled);
+        shapes.setColor(0.08f, 0.09f, 0.11f, 1.0f);
+        shapes.rect(layout.panelX(), 0, layout.panelWidth(), 30.0f);
+        shapes.end();
+        batch.begin();
         font.setColor(0.75f, 0.78f, 0.82f, 1.0f);
-        draw(state.message(), x, 22);
+        draw(state.message(), x, 20);
         batch.end();
     }
 
@@ -93,20 +113,32 @@ public final class DirectEditorUi implements Disposable {
             draw("No selected cell", x, startY);
             return;
         }
-        CellId cell = state.selectedCell().orElseThrow();
-        PlanetLatLon center = grid.center(cell);
-        ResolvedElevation elevation = resolver.resolve(cell, planet);
+        Cell cell = state.selectedCell().orElseThrow();
+        PlanetLatLon center = cell.center();
+        ResolvedFeatureValue<Double> elevation = cell.resolvedFeature(elevationFeature);
         int line = 0;
-        draw("SELECTED CELL", x, startY - line++ * 22);
-        draw("ID: " + cell.asHexString(), x, startY - line++ * 22);
-        draw("Resolution: " + grid.resolution(cell), x, startY - line++ * 22);
-        draw(String.format("Lat/Lon: %.3f / %.3f", center.latitudeDegrees(), center.longitudeDegrees()), x, startY - line++ * 22);
-        draw("Pentagon: " + grid.isPentagon(cell), x, startY - line++ * 22);
-        draw("Neighbors: " + grid.neighbors(cell).size(), x, startY - line++ * 22);
-        if (grid.resolution(cell) > 0) draw("Parent: " + grid.parent(cell, grid.resolution(cell) - 1).asHexString(), x, startY - line++ * 22);
-        draw(elevation.applicable() ? String.format("Elevation: %.0f m", elevation.meters()) : "Elevation: not applicable", x, startY - line++ * 22);
-        draw("Source: " + elevation.source().name().toLowerCase(), x, startY - line++ * 22);
-        draw("Directly editable: " + elevation.directlyEditable(), x, startY - line * 22);
+        float spacing = 13.0f;
+        draw("SELECTED CELL", x, startY - line++ * spacing);
+        draw("ID: " + cell.id().asHexString(), x, startY - line++ * spacing);
+        draw("Resolution: " + cell.resolution(), x, startY - line++ * spacing);
+        draw(String.format("Lat/Lon: %.3f / %.3f", center.latitudeDegrees(), center.longitudeDegrees()), x, startY - line++ * spacing);
+        draw("Pentagon: " + cell.isPentagon(), x, startY - line++ * spacing);
+        draw("Neighbors: " + cell.neighbors().size(), x, startY - line++ * spacing);
+        if (cell.parent().isPresent()) draw("Parent: " + cell.parent().orElseThrow().id().asHexString(), x, startY - line++ * spacing);
+        var stored = cell.explicitFeature(elevationFeature);
+        draw(stored.isPresent() ? String.format("Stored: %.0f m", stored.orElseThrow()) : "Stored: none", x, startY - line++ * spacing);
+        draw(elevation.applicable() ? String.format("Effective: %.0f m", elevation.effectiveValue()) : "Effective: not applicable", x, startY - line++ * spacing);
+        draw("Effective source: " + elevation.effectiveSource().name().toLowerCase(), x, startY - line++ * spacing);
+        draw(elevation.applicable() ? String.format("Display: %.0f m", elevation.displayValue()) : "Display: not applicable", x, startY - line++ * spacing);
+        draw("Display source: " + elevation.displaySource().name().toLowerCase(), x, startY - line++ * spacing);
+        draw("Directly editable: " + elevation.directlyEditable(), x, startY - line * spacing);
+        line++;
+        draw("Descendant overrides: " + cell.explicitDescendantCount(elevationFeature), x, startY - line++ * spacing);
+        if (elevationFeature.landFeature().isViewableAt(cell.resolution())) {
+            draw("Provided land: " + cell.feature(elevationFeature.landFeature()), x, startY - line * spacing);
+        } else {
+            draw("Provided land: not viewable", x, startY - line * spacing);
+        }
     }
 
     private void drawButton(EditorLayout layout, UiButton button) {

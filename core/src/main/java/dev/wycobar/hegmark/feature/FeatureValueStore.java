@@ -2,14 +2,23 @@ package dev.wycobar.hegmark.feature;
 
 import dev.wycobar.hegmark.planet.CellId;
 
-import java.util.OptionalDouble;
+import java.util.Optional;
+import java.util.Map;
+import java.util.List;
+import dev.wycobar.hegmark.planet.Cell;
 
 public interface FeatureValueStore {
-    OptionalDouble value(String featureId, CellId cell);
+    <T> Optional<T> value(StoredFeature<T> feature, CellId cell);
 
-    void put(String featureId, CellId cell, double value);
+    <T> void put(StoredFeature<T> feature, CellId cell, T value);
 
-    void remove(String featureId, CellId cell);
+    void remove(StoredFeature<?> feature, CellId cell);
+
+    <T> Map<CellId, T> values(StoredFeature<T> feature);
+
+    List<ExplicitFeatureValue<?>> values(CellId cell);
+
+    <T> Map<CellId, T> descendantValues(StoredFeature<T> feature, Cell root);
 
     int size();
 }

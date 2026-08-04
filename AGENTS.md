@@ -22,6 +22,8 @@
 - Treat H3 IDs as spatial addresses/topology, not physical planet geometry. Convert H3 angular coordinates through the fictional planet model; do not use Earth-scaled H3 metrics as physical distances or areas.
 - Support pentagons and variable boundary/neighbor counts. Never assume six neighbors, six vertices, uniform child counts, or global hex directions.
 - Keep world data sparse and hierarchical: resolve explicit cell values and ancestor overrides over deterministic generated defaults; never materialize every possible H3 cell. Each feature declares the grid-resolution range where it applies and may be directly edited, so do not allow every feature to be overridden down to maximum H3 detail.
+- Features implement the project-owned `Feature` contract with separate viewable and settable resolution ranges. Read-only computed features are exposed through `ProvidedFeatures`, declare their own view range, and resolve typed dependencies by navigating the target `Cell` rather than storage.
+- Coarse feature edits use explicit `FILL GAPS` (preserve descendants through sparse inheritance) or `OVERWRITE` (remove descendant overrides) semantics. Feature-owned aggregation produces transient display values through batched change events; never persist or treat aggregate caches as explicit data.
 
 ## UI Direction
 
@@ -33,4 +35,8 @@
 - Keep domain, rendering, UI/input, and persistence responsibilities isolated. Depend on narrow project-owned interfaces at boundaries, especially around the grid, feature resolution, and storage; do not leak H3 or libGDX types through domain APIs without a concrete need.
 - Apply SOLID where it reduces coupling or makes a changing concern independently testable. Extract only genuinely shared or independently variable logic; do not create abstractions merely to satisfy a pattern.
 - Do not duplicate domain rules such as resolution applicability, cell-value resolution, or geometry conversion. Give each rule one authoritative implementation and reuse it from tools, rendering, and persistence.
+- Use domain language literally: child cells have feature values; there is no "child feature" concept. Before introducing an abstraction, verify that its name represents a real domain concept and that the dependency direction follows the behavior owner.
+- Before designing services or DTOs, identify the ubiquitous-language entities, value objects, and aggregate roots. Prefer behavior-rich domain objects when identity, navigation, state, and invariants naturally belong together; do not reduce an entity to an ID passed among procedural services.
+- Keep complete domain decisions with their owner. Features receive the target `Cell` and navigate its relationships or typed feature dependencies themselves; infrastructure may trigger/cache behavior but must not precompute its decision inputs. Avoid service-locator interfaces and generic context bags when an aggregate relationship expresses the model directly.
+- For every new abstraction, ask: "Would a domain expert name this?", "Who owns the invariant and input selection?", and "Does this make the code read like the product model?" Prefer screaming architecture and DDD boundaries over generic data-processing shapes.
 - Add focused automated tests for every nontrivial domain feature and regression. Cover boundary cases such as pentagons, feature resolution limits, hierarchy/override precedence, sparse resolution, and deterministic generation; test rendering or input seams through small deterministic units where practical.

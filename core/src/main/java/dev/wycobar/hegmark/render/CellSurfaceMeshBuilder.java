@@ -3,9 +3,9 @@ package dev.wycobar.hegmark.render;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
-import dev.wycobar.hegmark.feature.ElevationResolver;
+import dev.wycobar.hegmark.feature.ElevationFeature;
 import dev.wycobar.hegmark.feature.ElevationStyle;
-import dev.wycobar.hegmark.feature.ResolvedElevation;
+import dev.wycobar.hegmark.feature.ResolvedFeatureValue;
 import dev.wycobar.hegmark.feature.RgbColor;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellGeometry;
@@ -13,25 +13,26 @@ import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetLatLon;
 import dev.wycobar.hegmark.planet.PlanetModel;
+import dev.wycobar.hegmark.planet.Planet;
+import dev.wycobar.hegmark.planet.Cell;
 
 import java.util.List;
 import java.util.Objects;
 
 public final class CellSurfaceMeshBuilder {
-    private final PlanetGrid grid;
+    private final Planet world;
     private final PlanetModel planet;
-    private final ElevationResolver resolver;
+    private final ElevationFeature elevationFeature;
     private final ElevationStyle style;
 
     public CellSurfaceMeshBuilder(
-        PlanetGrid grid,
-        PlanetModel planet,
-        ElevationResolver resolver,
+        Planet world,
+        ElevationFeature elevationFeature,
         ElevationStyle style
     ) {
-        this.grid = grid;
-        this.planet = planet;
-        this.resolver = resolver;
+        this.world = world;
+        this.planet = world.definition();
+        this.elevationFeature = elevationFeature;
         this.style = style;
     }
 
@@ -43,10 +44,11 @@ public final class CellSurfaceMeshBuilder {
     }
 
     private void appendCell(FloatArray fills, FloatArray lines, CellId cell, boolean selected) {
-        CellGeometry geometry = grid.geometry(cell);
-        ResolvedElevation elevation = resolver.resolve(cell, planet);
+        Cell domainCell = world.cell(cell);
+        CellGeometry geometry = domainCell.geometry();
+        ResolvedFeatureValue<Double> elevation = domainCell.resolvedFeature(elevationFeature);
         RgbColor rgb = elevation.applicable()
-            ? style.color(elevation.meters(), planet.seaLevelMeters())
+            ? style.color(elevation.displayValue(), planet.seaLevelMeters())
             : new RgbColor(0.25f, 0.25f, 0.28f);
         float fillColor = Color.toFloatBits(rgb.red(), rgb.green(), rgb.blue(), 1.0f);
         float lineColor = selected

@@ -2,6 +2,7 @@ package dev.wycobar.hegmark.editor;
 
 public enum EditorTool {
     SELECT,
-    PAINT,
+    FILL_GAPS,
+    OVERWRITE,
     ERASE
 }

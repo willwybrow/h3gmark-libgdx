@@ -12,17 +12,19 @@ import dev.wycobar.hegmark.editor.LodPolicy;
 import dev.wycobar.hegmark.editor.PlanetRayPicker;
 import dev.wycobar.hegmark.editor.SelectionProjector;
 import dev.wycobar.hegmark.editor.VisibleCellSelector;
-import dev.wycobar.hegmark.feature.ElevationEditor;
-import dev.wycobar.hegmark.feature.ElevationGenerator;
-import dev.wycobar.hegmark.feature.ElevationResolver;
+import dev.wycobar.hegmark.feature.FeatureChangeBus;
+import dev.wycobar.hegmark.feature.InMemoryFeatureDisplayCache;
+import dev.wycobar.hegmark.feature.ElevationFeature;
 import dev.wycobar.hegmark.feature.ElevationStyle;
 import dev.wycobar.hegmark.feature.InMemoryFeatureValueStore;
+import dev.wycobar.hegmark.feature.FeatureRegistry;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.H3PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetLatLon;
 import dev.wycobar.hegmark.planet.PlanetModel;
+import dev.wycobar.hegmark.planet.Planet;
 import dev.wycobar.hegmark.render.CellSurfaceRenderer;
 import dev.wycobar.hegmark.render.OrbitCamera;
 
@@ -36,7 +38,9 @@ public class Main extends ApplicationAdapter {
     private final PlanetRayPicker picker = new PlanetRayPicker();
 
     private PlanetModel planet;
+    private Planet world;
     private PlanetGrid grid;
+    private FeatureRegistry featureRegistry;
     private OrbitCamera orbitCamera;
     private VisibleCellSelector visibleCells;
     private SelectionProjector selectionProjector;
@@ -51,13 +55,16 @@ public class Main extends ApplicationAdapter {
         orbitCamera = new OrbitCamera();
         planet = new PlanetModel("Hegmark", 6_400_000.0, 6_200_000.0, 0.0, 0x48a9dL);
         grid = new H3PlanetGrid();
+        ElevationFeature elevationFeature = ElevationFeature.INSTANCE;
+        featureRegistry = new FeatureRegistry(List.of(elevationFeature));
+        FeatureChangeBus changeBus = new FeatureChangeBus();
         InMemoryFeatureValueStore store = new InMemoryFeatureValueStore();
-        ElevationResolver elevationResolver = new ElevationResolver(grid, store, new ElevationGenerator());
-        ElevationEditor elevationEditor = new ElevationEditor(grid, store);
+        InMemoryFeatureDisplayCache displayCache = new InMemoryFeatureDisplayCache();
+        world = new Planet(planet, grid, featureRegistry, store, displayCache, changeBus);
         visibleCells = new VisibleCellSelector(grid);
         selectionProjector = new SelectionProjector(grid);
-        surfaceRenderer = new CellSurfaceRenderer(grid, planet, elevationResolver, new ElevationStyle());
-        ui = new DirectEditorUi(grid, planet, elevationResolver);
+        surfaceRenderer = new CellSurfaceRenderer(world, elevationFeature, new ElevationStyle());
+        ui = new DirectEditorUi(world, elevationFeature);
         input = new EditorInputController(
             layout,
             state,
@@ -65,10 +72,11 @@ public class Main extends ApplicationAdapter {
             orbitCamera,
             picker,
             planet,
-            grid,
-            elevationEditor,
+            world,
+            elevationFeature,
             () -> displayResolution
         );
+        changeBus.subscribe(event -> input.requestRebuild());
         resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.input.setInputProcessor(input);
     }
@@ -92,7 +100,7 @@ public class Main extends ApplicationAdapter {
         if (rebuild) {
             List<CellId> cells = visibleCells.select(focusCell, displayResolution);
             CellId displayedSelection = state.selectedCell()
-                .map(cell -> selectionProjector.atResolution(cell, displayResolution))
+                .map(cell -> selectionProjector.atResolution(cell.id(), displayResolution))
                 .orElse(null);
             surfaceRenderer.rebuild(cells, displayedSelection);
         }

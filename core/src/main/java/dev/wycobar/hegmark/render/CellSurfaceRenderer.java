@@ -8,11 +8,12 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.Disposable;
-import dev.wycobar.hegmark.feature.ElevationResolver;
+import dev.wycobar.hegmark.feature.ElevationFeature;
 import dev.wycobar.hegmark.feature.ElevationStyle;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetModel;
+import dev.wycobar.hegmark.planet.Planet;
 
 import java.util.List;
 
@@ -44,12 +45,11 @@ public final class CellSurfaceRenderer implements Disposable {
     private int cellCount;
 
     public CellSurfaceRenderer(
-        PlanetGrid grid,
-        PlanetModel planet,
-        ElevationResolver resolver,
+        Planet world,
+        ElevationFeature elevationFeature,
         ElevationStyle style
     ) {
-        meshBuilder = new CellSurfaceMeshBuilder(grid, planet, resolver, style);
+        meshBuilder = new CellSurfaceMeshBuilder(world, elevationFeature, style);
         ShaderProgram.pedantic = false;
         shader = new ShaderProgram(VERTEX_SHADER, FRAGMENT_SHADER);
         if (!shader.isCompiled()) throw new IllegalStateException("Cell shader failed to compile: " + shader.getLog());
