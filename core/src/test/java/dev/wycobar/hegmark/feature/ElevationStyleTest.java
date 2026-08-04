@@ -11,7 +11,7 @@ class ElevationStyleTest {
     @Test
     void waterIsBlueAndLandIsGreenRelativeToSeaLevel() {
         RgbColor water = style.color(-1.0, 0.0);
-        RgbColor land = style.color(0.0, 0.0);
+        RgbColor land = style.color(1.0, 0.0);
         assertTrue(water.blue() > water.green());
         assertTrue(land.green() > land.blue());
     }

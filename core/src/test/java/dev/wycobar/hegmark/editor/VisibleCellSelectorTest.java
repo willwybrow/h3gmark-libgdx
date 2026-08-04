@@ -28,4 +28,13 @@ class VisibleCellSelectorTest {
         assertTrue(cells.size() <= 1_800);
         assertTrue(cells.size() > 1_000);
     }
+
+    @Test
+    void selectsBoundedCellsAtMaximumLayer() {
+        CellId focus = grid.cellAt(new PlanetLatLon(0.0, 0.0), 15);
+        List<CellId> cells = selector.select(focus, 15);
+        assertTrue(cells.contains(focus));
+        assertTrue(cells.size() <= 1_800);
+        assertTrue(cells.stream().allMatch(cell -> grid.resolution(cell) == 15));
+    }
 }

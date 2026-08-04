@@ -5,7 +5,7 @@ import dev.wycobar.hegmark.feature.RgbColor;
 public final class ElevationStyle {
     public RgbColor color(double elevationMeters, double seaLevelMeters) {
         double relative = elevationMeters - seaLevelMeters;
-        if (relative < 0.0) {
+        if (relative <= 0.0) {
             float depth = clamp((float) (-relative / 3_000.0));
             return new RgbColor(0.05f, 0.28f + 0.16f * (1.0f - depth), 0.58f + 0.32f * (1.0f - depth));
         }

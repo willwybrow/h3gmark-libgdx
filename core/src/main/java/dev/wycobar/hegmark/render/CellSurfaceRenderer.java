@@ -8,12 +8,14 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.math.Matrix4;
 import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
 import dev.wycobar.hegmark.feature.elevation.ElevationStyle;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetModel;
 import dev.wycobar.hegmark.planet.Planet;
+import dev.wycobar.hegmark.planet.CartesianPoint;
 
 import java.util.List;
 
@@ -43,6 +45,8 @@ public final class CellSurfaceRenderer implements Disposable {
     private Mesh fillMesh;
     private Mesh lineMesh;
     private int cellCount;
+    private CartesianPoint meshOrigin = new CartesianPoint(0.0, 0.0, 0.0);
+    private final Matrix4 localProjectionView = new Matrix4();
 
     public CellSurfaceRenderer(
         Planet world,
@@ -59,6 +63,7 @@ public final class CellSurfaceRenderer implements Disposable {
         SurfaceMeshData data = meshBuilder.build(cells, selectedCell);
         replaceMeshes(data.fillVertices(), data.lineVertices());
         cellCount = data.cellCount();
+        meshOrigin = data.origin();
     }
 
     public int cellCount() {
@@ -72,7 +77,12 @@ public final class CellSurfaceRenderer implements Disposable {
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
         Gdx.gl.glCullFace(GL20.GL_BACK);
         shader.bind();
-        shader.setUniformMatrix("u_projTrans", camera.combined);
+        localProjectionView.set(camera.combined).translate(
+            (float) meshOrigin.x(),
+            (float) meshOrigin.y(),
+            (float) meshOrigin.z()
+        );
+        shader.setUniformMatrix("u_projTrans", localProjectionView);
         fillMesh.render(shader, GL20.GL_TRIANGLES);
         Gdx.gl.glDisable(GL20.GL_CULL_FACE);
         Gdx.gl.glEnable(GL20.GL_BLEND);

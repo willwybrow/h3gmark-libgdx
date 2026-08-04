@@ -30,4 +30,24 @@ class PlanetRayPickerTest {
             planet
         ).isEmpty());
     }
+
+    @Test
+    void remainsStableImmediatelyAboveSurface() {
+        PlanetLatLon coordinate = picker.pick(
+            new CartesianPoint(1.000001, 0.0, 0.0),
+            new CartesianPoint(-1.0, 0.0, 0.0),
+            planet
+        ).orElseThrow();
+        assertEquals(0.0, coordinate.latitudeDegrees(), 1e-10);
+        assertEquals(0.0, coordinate.longitudeDegrees(), 1e-10);
+    }
+
+    @Test
+    void rejectsNonFiniteRaysWithoutConstructingInvalidCoordinates() {
+        assertTrue(picker.pick(
+            new CartesianPoint(Double.NaN, 0.0, 0.0),
+            new CartesianPoint(-1.0, 0.0, 0.0),
+            planet
+        ).isEmpty());
+    }
 }

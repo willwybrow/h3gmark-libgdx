@@ -1,4 +1,11 @@
 package dev.wycobar.hegmark.render;
 
-public record SurfaceMeshData(float[] fillVertices, float[] lineVertices, int cellCount) {
+import dev.wycobar.hegmark.planet.CartesianPoint;
+
+public record SurfaceMeshData(
+    float[] fillVertices,
+    float[] lineVertices,
+    int cellCount,
+    CartesianPoint origin
+) {
 }

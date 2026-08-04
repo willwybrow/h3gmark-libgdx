@@ -13,7 +13,7 @@ public final class OrbitCamera {
     private boolean dirty = true;
 
     public OrbitCamera() {
-        camera.near = 0.0002f;
+        camera.near = 0.05f;
         camera.far = 20.0f;
         update(1, 1);
     }
@@ -34,8 +34,8 @@ public final class OrbitCamera {
 
     public void zoom(float amount) {
         float surfaceGap = distance - 1.0f;
-        surfaceGap *= 1.0f + amount * 0.15f;
-        distance = 1.0f + MathUtils.clamp(surfaceGap, 0.001f, 5.0f);
+        surfaceGap *= Math.max(0.1f, 1.0f + amount * 0.15f);
+        distance = 1.0f + MathUtils.clamp(surfaceGap, 0.000001f, 5.0f);
         dirty = true;
     }
 
@@ -59,6 +59,7 @@ public final class OrbitCamera {
         camera.lookAt(0.0f, 0.0f, 0.0f);
         camera.viewportWidth = Math.max(1, viewportWidth);
         camera.viewportHeight = Math.max(1, viewportHeight);
+        camera.near = Math.max(0.0000001f, (distance - 1.0f) * 0.05f);
         camera.update();
         dirty = false;
         return true;

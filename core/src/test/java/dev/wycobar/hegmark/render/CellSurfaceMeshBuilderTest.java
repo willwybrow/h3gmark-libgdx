@@ -40,7 +40,8 @@ class CellSurfaceMeshBuilderTest {
     @Test
     void emitsOutwardFacingTrianglesForBackFaceCulling() {
         CellId cell = grid.cellsAtResolution(2).getFirst();
-        float[] vertices = builder.build(List.of(cell), null).fillVertices();
+        SurfaceMeshData mesh = builder.build(List.of(cell), null);
+        float[] vertices = mesh.fillVertices();
 
         for (int offset = 0; offset < vertices.length; offset += 12) {
             float cx = vertices[offset];
@@ -55,7 +56,28 @@ class CellSurfaceMeshBuilderTest {
             float nx = ay * bz - az * by;
             float ny = az * bx - ax * bz;
             float nz = ax * by - ay * bx;
-            assertTrue(nx * cx + ny * cy + nz * cz >= -1e-7f);
+            double globalX = cx + mesh.origin().x();
+            double globalY = cy + mesh.origin().y();
+            double globalZ = cz + mesh.origin().z();
+            assertTrue(nx * globalX + ny * globalY + nz * globalZ >= -1e-7);
         }
+    }
+
+    @Test
+    void preservesDistinctGeometryAtMaximumLayer() {
+        CellId cell = grid.cellAt(new dev.wycobar.hegmark.planet.PlanetLatLon(0.0, 0.0), 15);
+        float[] vertices = builder.build(List.of(cell), null).fillVertices();
+        double centerToBoundary = Math.sqrt(
+            Math.pow(vertices[4] - vertices[0], 2)
+                + Math.pow(vertices[5] - vertices[1], 2)
+                + Math.pow(vertices[6] - vertices[2], 2)
+        );
+        double boundaryEdge = Math.sqrt(
+            Math.pow(vertices[8] - vertices[4], 2)
+                + Math.pow(vertices[9] - vertices[5], 2)
+                + Math.pow(vertices[10] - vertices[6], 2)
+        );
+        assertTrue(centerToBoundary > 0.0);
+        assertTrue(boundaryEdge > 0.0);
     }
 }

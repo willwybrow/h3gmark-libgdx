@@ -39,11 +39,20 @@ public final class CellSurfaceMeshBuilder {
     public SurfaceMeshData build(List<CellId> cells, CellId selectedCell) {
         FloatArray fills = new FloatArray(false, Math.max(64, cells.size() * 72));
         FloatArray lines = new FloatArray(false, Math.max(64, cells.size() * 56));
-        for (CellId cell : cells) appendCell(fills, lines, cell, Objects.equals(cell, selectedCell));
-        return new SurfaceMeshData(fills.toArray(), lines.toArray(), cells.size());
+        CartesianPoint origin = cells.isEmpty()
+            ? new CartesianPoint(0.0, 0.0, 0.0)
+            : planet.toRenderCartesian(world.cell(cells.getFirst()).center());
+        for (CellId cell : cells) appendCell(fills, lines, cell, Objects.equals(cell, selectedCell), origin);
+        return new SurfaceMeshData(fills.toArray(), lines.toArray(), cells.size(), origin);
     }
 
-    private void appendCell(FloatArray fills, FloatArray lines, CellId cell, boolean selected) {
+    private void appendCell(
+        FloatArray fills,
+        FloatArray lines,
+        CellId cell,
+        boolean selected,
+        CartesianPoint origin
+    ) {
         Cell domainCell = world.cell(cell);
         CellGeometry geometry = domainCell.geometry();
         RgbColor rgb = style.color(elevationFeature.valueAt(domainCell).orElse(planet.seaLevelMeters()), planet.seaLevelMeters());
@@ -51,21 +60,33 @@ public final class CellSurfaceMeshBuilder {
         float lineColor = selected
             ? Color.toFloatBits(1.0f, 0.85f, 0.1f, 1.0f)
             : Color.toFloatBits(0.03f, 0.05f, 0.06f, 0.72f);
-        Vector3 center = point(geometry.center(), 1.0f);
+        CartesianPoint globalCenter = planet.toRenderCartesian(geometry.center());
+        Vector3 center = localPoint(globalCenter, origin);
+        Vector3 outward = vector(globalCenter);
         List<PlanetLatLon> boundary = geometry.boundary();
         for (int index = 0; index < boundary.size(); index++) {
-            Vector3 first = point(boundary.get(index), 1.0f);
-            Vector3 second = point(boundary.get((index + 1) % boundary.size()), 1.0f);
-            appendOutwardTriangle(fills, center, first, second, fillColor);
-            appendVertex(lines, point(boundary.get(index), 1.0015f), lineColor);
-            appendVertex(lines, point(boundary.get((index + 1) % boundary.size()), 1.0015f), lineColor);
+            Vector3 first = localPoint(planet.toRenderCartesian(boundary.get(index)), origin);
+            Vector3 second = localPoint(
+                planet.toRenderCartesian(boundary.get((index + 1) % boundary.size())),
+                origin
+            );
+            appendOutwardTriangle(fills, center, first, second, outward, fillColor);
+            appendVertex(lines, first, lineColor);
+            appendVertex(lines, second, lineColor);
         }
     }
 
-    private void appendOutwardTriangle(FloatArray values, Vector3 center, Vector3 first, Vector3 second, float color) {
+    private void appendOutwardTriangle(
+        FloatArray values,
+        Vector3 center,
+        Vector3 first,
+        Vector3 second,
+        Vector3 outward,
+        float color
+    ) {
         Vector3 normal = new Vector3(first).sub(center).crs(new Vector3(second).sub(center));
         appendVertex(values, center, color);
-        if (normal.dot(center) >= 0.0f) {
+        if (normal.dot(outward) >= 0.0f) {
             appendVertex(values, first, color);
             appendVertex(values, second, color);
         } else {
@@ -74,9 +95,16 @@ public final class CellSurfaceMeshBuilder {
         }
     }
 
-    private Vector3 point(PlanetLatLon coordinate, float scale) {
-        CartesianPoint point = planet.toRenderCartesian(coordinate);
-        return new Vector3((float) point.x() * scale, (float) point.y() * scale, (float) point.z() * scale);
+    private Vector3 localPoint(CartesianPoint point, CartesianPoint origin) {
+        return new Vector3(
+            (float) (point.x() - origin.x()),
+            (float) (point.y() - origin.y()),
+            (float) (point.z() - origin.z())
+        );
+    }
+
+    private Vector3 vector(CartesianPoint point) {
+        return new Vector3((float) point.x(), (float) point.y(), (float) point.z());
     }
 
     private void appendVertex(FloatArray values, Vector3 point, float color) {

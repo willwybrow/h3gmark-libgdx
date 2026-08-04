@@ -7,18 +7,14 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
-import dev.wycobar.hegmark.feature.elevation.LandFeature;
-import dev.wycobar.hegmark.feature.ResolvedFeatureValue;
 import dev.wycobar.hegmark.planet.Layer;
 import dev.wycobar.hegmark.planet.PlanetLatLon;
-import dev.wycobar.hegmark.planet.Planet;
 import dev.wycobar.hegmark.planet.Cell;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class DirectEditorUi implements Disposable {
-    private final Planet world;
     private final ElevationFeature elevationFeature;
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final SpriteBatch batch = new SpriteBatch();
@@ -27,12 +23,10 @@ public final class DirectEditorUi implements Disposable {
     private Layer displayResolution = Layer.COUNTRY;
 
     public DirectEditorUi(
-        Planet world,
         ElevationFeature elevationFeature
     ) {
-        this.world = world;
         this.elevationFeature = elevationFeature;
-        font.getData().setScale(0.8f);
+        font.getData().setScale(1.0f);
     }
 
     public List<UiButton> buttons(EditorLayout layout, EditorState state) {

@@ -3,7 +3,6 @@ package dev.wycobar.hegmark;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.math.collision.Ray;
 import dev.wycobar.hegmark.editor.DirectEditorUi;
 import dev.wycobar.hegmark.editor.EditorInputController;
 import dev.wycobar.hegmark.editor.EditorLayout;
@@ -64,7 +63,7 @@ public class Main extends ApplicationAdapter {
         visibleCells = new VisibleCellSelector(grid);
         selectionProjector = new SelectionProjector(grid);
         surfaceRenderer = new CellSurfaceRenderer(world, elevationFeature, new ElevationStyle());
-        ui = new DirectEditorUi(world, elevationFeature);
+        ui = new DirectEditorUi(elevationFeature);
         input = new EditorInputController(
             layout,
             state,
@@ -124,17 +123,10 @@ public class Main extends ApplicationAdapter {
     }
 
     private PlanetLatLon viewCenter() {
-        Ray ray = orbitCamera.camera().getPickRay(
-            layout.liveWidth() / 2.0f,
-            layout.height() / 2.0f,
-            0.0f,
-            0.0f,
-            layout.liveWidth(),
-            layout.height()
-        );
+        var camera = orbitCamera.camera();
         Optional<PlanetLatLon> coordinate = picker.pick(
-            new CartesianPoint(ray.origin.x, ray.origin.y, ray.origin.z),
-            new CartesianPoint(ray.direction.x, ray.direction.y, ray.direction.z),
+            new CartesianPoint(camera.position.x, camera.position.y, camera.position.z),
+            new CartesianPoint(camera.direction.x, camera.direction.y, camera.direction.z),
             planet
         );
         return coordinate.orElse(new PlanetLatLon(0.0, 0.0));

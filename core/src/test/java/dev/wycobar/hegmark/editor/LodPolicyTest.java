@@ -13,6 +13,7 @@ class LodPolicyTest {
         assertEquals(3, policy.resolution(0.3));
         assertEquals(4, policy.resolution(0.1));
         assertEquals(8, policy.resolution(0.002));
+        assertEquals(15, policy.resolution(0.000001));
     }
 
     @Test

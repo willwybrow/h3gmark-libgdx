@@ -14,6 +14,7 @@ class CameraStepPolicyTest {
         assertEquals(30.0f, policy.longitudeDegrees(2));
         assertTrue(policy.longitudeDegrees(4) < policy.longitudeDegrees(3));
         assertTrue(policy.longitudeDegrees(8) < 0.1f);
+        assertTrue(policy.longitudeDegrees(15) < 0.001f);
     }
 
     @Test
