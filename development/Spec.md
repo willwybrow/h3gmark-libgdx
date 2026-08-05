@@ -39,7 +39,7 @@ The complete grid must never be materialized at fine resolutions. Work is limite
 - its `CellId`, resolution, center, and geometry;
 - optional parent, children, and neighbors as `Cell` objects;
 - explicitly stored features on that exact cell;
-- effective and display values for stored features;
+- final feature values resolved behind each feature's contract;
 - computed provided features;
 - descendant-override queries needed by feature behavior.
 
@@ -82,13 +82,15 @@ Examples include elevation, temperature, biome, political control, and notes. Th
 
 Only explicit user values are stored. Setting a coarse cell does not create records for every descendant.
 
-For any cell, distinguish:
+Explicit values form a sparse frontier: a cell with an explicit value cannot have an explicit ancestor or descendant for the same feature. Writing beneath an explicit ancestor removes that ancestor value and carries its previously inherited value down the off-path sibling branches until the new write is reached. This preserves the rest of the edited region without expanding the complete subtree.
+
+Internally, a stored feature may distinguish:
 
 - **stored value**: an explicit value on that exact cell;
 - **effective value**: direct value, nearest applicable ancestor value, or deterministic generated default;
-- **display value**: a cached feature-defined summary of descendant display/effective values, falling back to the effective value when no summary exists.
+- **display value**: a feature-defined summary of descendant values, falling back to the effective value when no summary exists.
 
-Tools and inheritance use effective values. Rendering and computed features use display values. The inspector exposes both when they differ.
+These are feature implementation details. `Feature.valueAt(Cell)` always returns one final value; rendering, tools, computed features, and inspection do not receive storage or resolution metadata.
 
 At resolutions finer than a feature's settable maximum, values inherit from the nearest applicable ancestor. At coarser view-only resolutions, values may be summarized through feature aggregation.
 
@@ -114,7 +116,7 @@ A feature may implement `ProvidedFeatures` to expose virtual `ComputedFeature<T>
     - resolve dependencies and inspect topology through the target `Cell`;
 - never read storage directly.
 
-For example, a tectonic-plate feature can provide `fault_line` by comparing the resolved plate of a cell with its neighbors. Elevation can provide `land` by comparing displayed elevation with sea level.
+For example, a tectonic-plate feature can provide `fault_line` by comparing the resolved plate of a cell with its neighbors. Elevation can provide `land` by comparing elevation with sea level.
 
 Computed values are evaluated on demand. Any cache for them is derived and non-persistent.
 
@@ -130,9 +132,9 @@ At the feature's finest settable resolution, painting writes the selected cell d
 
 `FILL GAPS` performs a sparse top-down edit:
 
-- write the value once on the selected cell;
-- preserve all existing descendant overrides;
-- let descendants without a nearer override inherit the new value.
+- preserve all existing descendant values;
+- write the new baseline only to the largest uncovered branches;
+- never create an explicit value above or below another explicit value.
 
 This is the normal tool for adding a regional baseline without destroying local detail.
 
@@ -159,13 +161,13 @@ Each feature also identifies which aggregate cells are affected by a mutation. A
 
 Initial elevation aggregation is arithmetic mean. Other features may choose majority, minimum, maximum, sum, `all`, `any`, a threshold, or no aggregation.
 
-When descendants change, a parent's stored value remains its fallback for descendants without overrides. Its display value may differ because it summarizes the children's resulting values.
+When descendants change, an existing parent value is first split down to the edited frontier. The parent's display value then summarizes the children's resulting explicit, inherited, aggregated, or default values.
 
 Example: if every child resolves below sea level, their parent elevation summary is also below sea level and the parent renders as water when zoomed out.
 
 ### 4.5 Events and Derived Cache
 
-Feature mutations publish one immutable batch event after storage changes complete. Events identify the feature, operation, changed cells, and removed descendants.
+Feature mutations publish one immutable batch event after storage changes complete. Events identify the feature, changed cells, and removed cells; the distinct stored-feature command methods express operation intent.
 
 A synchronous application-thread subscriber maintains an in-memory display-value cache:
 
@@ -223,7 +225,7 @@ The MSPaint-style data/tool pane contains:
 - feature-specific paint values and tool settings;
 - camera buttons;
 - selected-cell identity, topology, and coordinates;
-- stored, effective, and display feature values and their sources;
+- the final feature value returned for the selected cell;
 - editability range and descendant override count;
 - computed provided-feature values;
 - operation status and overwrite confirmation.
@@ -258,10 +260,10 @@ Focused automated tests are required for nontrivial behavior, including:
 - direct and ancestor precedence;
 - fill-gaps preservation;
 - overwrite subtree deletion and isolation from siblings/features;
-- effective versus display values;
+- exact, inherited, aggregated, and default resolution paths behind final feature values;
 - event batching and no-op behavior;
 - cache invalidation and lazy reconstruction;
-- multi-level and pentagon aggregation;
+- multi-level aggregation;
 - computed-feature lookup and independent ranges;
 - mesh triangulation/winding, picking, LOD, and control hit testing.
 

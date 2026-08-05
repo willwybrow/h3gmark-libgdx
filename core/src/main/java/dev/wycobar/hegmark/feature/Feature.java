@@ -14,7 +14,7 @@ interface Feature<T> {
 
     Optional<ResolutionRange> settableRange();
 
-    Optional<T> valueAt(Cell cell);
+    T valueAt(Cell cell);
 
     default boolean isViewableAt(Layer resolution) {
         return viewableRange().contains(resolution);

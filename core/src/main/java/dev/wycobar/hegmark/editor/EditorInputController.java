@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.math.collision.Ray;
+import dev.wycobar.hegmark.feature.FeatureMutationResult;
+import dev.wycobar.hegmark.feature.FeatureMutationStatus;
 import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellId;
@@ -128,16 +130,37 @@ public final class EditorInputController extends InputAdapter {
         state.select(cell);
         try {
             if (state.tool() == EditorTool.FILL_GAPS) {
-                state.setMessage("NOT YET IMPLEMENTED");
+                report(elevationFeature.fillGapsAt(cell, state.paintElevationMeters()));
             } else if (state.tool() == EditorTool.OVERWRITE) {
-                state.setMessage("ALSO NOT IMPLEMENTED");
+                FeatureMutationResult result = elevationFeature.overwriteAt(
+                    cell,
+                    state.paintElevationMeters(),
+                    state.isOverwriteConfirmed(cell)
+                );
+                if (result.status() == FeatureMutationStatus.CONFIRMATION_REQUIRED) {
+                    state.requestOverwriteConfirmation(cell, result.removedValues());
+                } else {
+                    state.clearOverwriteConfirmation();
+                    report(result);
+                }
             } else if (state.tool() == EditorTool.ERASE) {
-                state.setMessage("Cell has no direct elevation override");
+                report(elevationFeature.eraseAt(cell));
             }
         } catch (IllegalArgumentException exception) {
             state.setMessage(exception.getMessage());
         }
         rebuildRequested = true;
+    }
+
+    private void report(FeatureMutationResult result) {
+        switch (result.status()) {
+            case APPLIED -> state.setMessage(
+                "Elevation updated: " + result.changedValues() + " written, " + result.removedValues() + " removed"
+            );
+            case NO_CHANGE -> state.setMessage("Elevation unchanged");
+            case REJECTED -> state.setMessage("Elevation cannot be edited at this resolution");
+            case CONFIRMATION_REQUIRED -> throw new IllegalStateException("Confirmation result was not handled");
+        }
     }
 
     private void handle(UiAction action) {

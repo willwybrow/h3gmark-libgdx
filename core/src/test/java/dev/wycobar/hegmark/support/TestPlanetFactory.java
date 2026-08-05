@@ -20,9 +20,9 @@ public final class TestPlanetFactory {
     public static Fixture create(long seed) {
         PlanetGrid grid = new H3PlanetGrid();
         InMemoryFeatureValueStore values = new InMemoryFeatureValueStore();
-        ElevationFeature elevation = new ElevationFeature(values);
         FeatureRegistry features = new FeatureRegistry();
         FeatureChangeBus changes = new FeatureChangeBus();
+        ElevationFeature elevation = new ElevationFeature(values, changes);
         PlanetModel definition = new PlanetModel("Test", 6_000_000.0, 5_900_000.0, 0.0, seed);
         Planet planet = new Planet(definition, grid, features, values, changes);
         return new Fixture(planet, grid, elevation, features, values, changes);

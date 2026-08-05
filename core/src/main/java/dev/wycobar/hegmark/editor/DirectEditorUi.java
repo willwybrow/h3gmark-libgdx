@@ -117,9 +117,7 @@ public final class DirectEditorUi implements Disposable {
         draw(String.format("Lat/Lon: %.3f / %.3f", center.latitudeDegrees(), center.longitudeDegrees()), x, startY - line++ * spacing);
         draw("Neighbors: " + cell.neighbours().size(), x, startY - line++ * spacing);
         if (cell.parent().isPresent()) draw("Parent: " + cell.parent().orElseThrow().id().asHexString(), x, startY - line++ * spacing);
-        draw(String.format("Effective: %.0f m", elevationFeature.valueAt(cell).orElse(0.0)), x, startY - line++ * spacing);
-        line++;
-        draw("Provided land: " + elevationFeature.valueAt(cell), x, startY - line * spacing);
+        draw(String.format("Elevation: %.0f m", elevationFeature.valueAt(cell)), x, startY - line * spacing);
 
     }
 

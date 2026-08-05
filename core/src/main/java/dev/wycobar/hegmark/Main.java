@@ -55,10 +55,10 @@ public class Main extends ApplicationAdapter {
         planet = new PlanetModel("Rinn", 5_994_000.0, 5_994_000.0, 0.0, 0x48a9dL);
         grid = new H3PlanetGrid();
         InMemoryFeatureValueStore store = new InMemoryFeatureValueStore();
-        ElevationFeature elevationFeature = new ElevationFeature(store);
+        FeatureChangeBus changeBus = new FeatureChangeBus();
+        ElevationFeature elevationFeature = new ElevationFeature(store, changeBus);
         featureRegistry = new FeatureRegistry();
         featureRegistry.register(elevationFeature);
-        FeatureChangeBus changeBus = new FeatureChangeBus();
         world = new Planet(planet, grid, featureRegistry, store, changeBus);
         visibleCells = new VisibleCellSelector(grid);
         selectionProjector = new SelectionProjector(grid);

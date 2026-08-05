@@ -53,7 +53,7 @@ public final class CellSurfaceMeshBuilder {
     ) {
         Cell domainCell = world.cell(cell);
         CellGeometry geometry = domainCell.geometry();
-        RgbColor rgb = style.color(elevationFeature.valueAt(domainCell).orElse(planet.seaLevelMeters()), planet.seaLevelMeters());
+        RgbColor rgb = style.color(elevationFeature.valueAt(domainCell), planet.seaLevelMeters());
         float fillColor = Color.toFloatBits(rgb.red(), rgb.green(), rgb.blue(), 1.0f);
         float lineColor = selected
             ? Color.toFloatBits(1.0f, 0.85f, 0.1f, 1.0f)

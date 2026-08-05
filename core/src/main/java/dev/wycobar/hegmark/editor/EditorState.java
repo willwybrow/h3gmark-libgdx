@@ -17,6 +17,7 @@ public final class EditorState {
     }
 
     public void select(Cell cell) {
+        if (pendingOverwriteCell != null && !pendingOverwriteCell.equals(cell)) clearOverwriteConfirmation();
         selectedCell = cell;
         message = "Selected " + cell.id().asHexString();
     }

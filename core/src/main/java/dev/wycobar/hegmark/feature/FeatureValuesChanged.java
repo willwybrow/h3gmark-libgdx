@@ -6,14 +6,13 @@ import java.util.Set;
 
 public record FeatureValuesChanged(
     StoredFeature<?> feature,
-    FeatureMutationOperation operation,
     Set<Cell> changedCells,
-    Set<Cell> removedDescendants
+    Set<Cell> removedCells
 ) {
     public FeatureValuesChanged {
         changedCells = Set.copyOf(changedCells);
-        removedDescendants = Set.copyOf(removedDescendants);
-        if (changedCells.isEmpty() && removedDescendants.isEmpty()) {
+        removedCells = Set.copyOf(removedCells);
+        if (changedCells.isEmpty() && removedCells.isEmpty()) {
             throw new IllegalArgumentException("A feature change must contain at least one changed cell");
         }
     }

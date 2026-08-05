@@ -38,7 +38,7 @@ public final class LandFeature extends ComputedFeature<Boolean> {
     }
 
     @Override
-    public Optional<Boolean> valueAt(Cell cell) {
-        return this.elevationFeature.valueAt(cell).map(elevation -> elevation > 0.0);
+    public Boolean valueAt(Cell cell) {
+        return this.elevationFeature.valueAt(cell) > cell.planet().definition().seaLevelMeters();
     }
 }

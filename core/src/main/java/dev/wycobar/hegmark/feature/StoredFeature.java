@@ -14,7 +14,11 @@ public abstract class StoredFeature<T> implements Feature<T> {
         this.featureValueStore = featureValueStore;
     }
 
-    public abstract T setAt(Cell cell, T value);
+    public abstract FeatureMutationResult fillGapsAt(Cell cell, T value);
+
+    public abstract FeatureMutationResult overwriteAt(Cell cell, T value, boolean destructiveEditConfirmed);
+
+    public abstract FeatureMutationResult eraseAt(Cell cell);
 
     public final Set<Feature<?>> provides() {
         return Stream.concat(Stream.of(this), this.additionalFeatures().stream()).collect(Collectors.toUnmodifiableSet());

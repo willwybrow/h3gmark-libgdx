@@ -16,6 +16,8 @@ class EditorStateTest {
         state.requestOverwriteConfirmation(cell, 3);
         assertTrue(state.isOverwriteConfirmed(cell));
         assertFalse(state.isOverwriteConfirmed(cell.neighbours().getFirst()));
+        state.select(cell.neighbours().getFirst());
+        assertFalse(state.isOverwriteConfirmed(cell));
 
         state.setPaintElevationMeters(2_000.0);
         assertFalse(state.isOverwriteConfirmed(cell));
