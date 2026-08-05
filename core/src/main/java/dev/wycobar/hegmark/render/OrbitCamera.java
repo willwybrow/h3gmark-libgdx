@@ -39,10 +39,24 @@ public final class OrbitCamera {
         dirty = true;
     }
 
-    public void rotateLongitude(int resolution, int direction) {
+    public void rotateLongitude(int direction) {
         if (direction == 0) return;
-        yawDegrees += Math.signum(direction) * stepPolicy.longitudeDegrees(resolution);
+        yawDegrees += Math.signum(direction) * rotationStepDegrees();
         dirty = true;
+    }
+
+    public void rotateLatitude(int direction) {
+        if (direction == 0) return;
+        pitchDegrees = MathUtils.clamp(
+            pitchDegrees + Math.signum(direction) * rotationStepDegrees(),
+            -85.0f,
+            85.0f
+        );
+        dirty = true;
+    }
+
+    private float rotationStepDegrees() {
+        return stepPolicy.longitudeDegrees(distance - 1.0f);
     }
 
     public boolean update(int viewportWidth, int viewportHeight) {

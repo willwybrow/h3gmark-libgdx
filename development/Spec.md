@@ -212,7 +212,7 @@ The camera orbits while pointing at the spheroid center. Controls include:
 - zoom-in and zoom-out buttons using the same zoom behavior;
 - longitude rotation buttons.
 
-Button rotation preserves camera distance and latitude. Its longitude increment shrinks as visible grid resolution increases.
+Button rotation preserves camera distance. Its longitude and latitude increments use the same step, which shrinks continuously as the camera approaches the surface.
 
 ## 6. Editor UI
 

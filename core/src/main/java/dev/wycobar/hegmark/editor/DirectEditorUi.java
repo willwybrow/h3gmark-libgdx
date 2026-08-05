@@ -50,6 +50,8 @@ public final class DirectEditorUi implements Disposable {
         buttons.add(button(UiAction.DETAIL_MORE, "Zoom in", x + half + 6, 164, half, false, true));
         buttons.add(button(UiAction.ROTATE_LEFT, "Rotate left", x, 200, half, false, true));
         buttons.add(button(UiAction.ROTATE_RIGHT, "Rotate right", x + half + 6, 200, half, false, true));
+        buttons.add(button(UiAction.ROTATE_UP, "Rotate up", x, 236, half, false, true));
+        buttons.add(button(UiAction.ROTATE_DOWN, "Rotate down", x + half + 6, 236, half, false, true));
         return List.copyOf(buttons);
     }
 
@@ -71,13 +73,13 @@ public final class DirectEditorUi implements Disposable {
         float x = layout.panelX() + Math.min(18.0f, layout.panelWidth() / 8.0f);
         draw("HEGMARK / ELEVATION", x, layout.height() - 20);
         draw("Paint value", x, layout.height() - 78);
-        draw("View: grid res " + displayResolution + "  |  " + renderedCells + " cells", x, layout.height() - 238);
+        draw("View: grid res " + displayResolution + "  |  " + renderedCells + " cells", x, layout.height() - 286);
         draw(
             "View " + elevationFeature.viewableRange().minimum() + "-" + elevationFeature.viewableRange().maximum()
                 + "  |  Set " + elevationFeature.settableRange().orElseThrow().minimum()
                 + "-" + elevationFeature.settableRange().orElseThrow().maximum(),
             x,
-            layout.height() - 254
+            layout.height() - 302
         );
         for (UiButton button : buttons(layout, state)) {
             font.setColor(button.enabled() ? Color.WHITE : Color.GRAY);
@@ -85,7 +87,7 @@ public final class DirectEditorUi implements Disposable {
             draw(button.label(), button.bounds().x() + 8.0f, renderY + 20.0f);
         }
         font.setColor(Color.WHITE);
-        drawSelection(state, x, layout.height() - 250);
+        drawSelection(state, x, layout.height() - 310);
         batch.end();
 
         shapes.begin(ShapeRenderer.ShapeType.Filled);

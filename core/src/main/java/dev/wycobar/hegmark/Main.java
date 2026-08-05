@@ -26,6 +26,7 @@ import dev.wycobar.hegmark.planet.PlanetModel;
 import dev.wycobar.hegmark.planet.Planet;
 import dev.wycobar.hegmark.render.CellSurfaceRenderer;
 import dev.wycobar.hegmark.render.OrbitCamera;
+import dev.wycobar.hegmark.render.PoleMarkerRenderer;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +45,7 @@ public class Main extends ApplicationAdapter {
     private VisibleCellSelector visibleCells;
     private SelectionProjector selectionProjector;
     private CellSurfaceRenderer surfaceRenderer;
+    private PoleMarkerRenderer poleMarkerRenderer;
     private DirectEditorUi ui;
     private EditorInputController input;
     private int displayResolution = 2;
@@ -63,6 +65,7 @@ public class Main extends ApplicationAdapter {
         visibleCells = new VisibleCellSelector(grid);
         selectionProjector = new SelectionProjector(grid);
         surfaceRenderer = new CellSurfaceRenderer(world, elevationFeature, new ElevationStyle());
+        poleMarkerRenderer = new PoleMarkerRenderer(planet);
         ui = new DirectEditorUi(elevationFeature);
         input = new EditorInputController(
             layout,
@@ -109,6 +112,7 @@ public class Main extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glViewport(0, 0, layout.liveWidth(), layout.height());
         surfaceRenderer.render(orbitCamera.camera());
+        poleMarkerRenderer.render(orbitCamera.camera());
 
         Gdx.gl.glViewport(0, 0, width, height);
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
@@ -143,6 +147,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         surfaceRenderer.dispose();
+        poleMarkerRenderer.dispose();
         ui.dispose();
     }
 }

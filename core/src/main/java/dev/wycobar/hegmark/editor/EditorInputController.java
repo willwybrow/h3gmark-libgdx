@@ -175,8 +175,10 @@ public final class EditorInputController extends InputAdapter {
             case ELEVATION_HIGH -> state.setPaintElevationMeters(2_000.0);
             case DETAIL_LESS -> orbitCamera.zoom(3.0f);
             case DETAIL_MORE -> orbitCamera.zoom(-3.0f);
-            case ROTATE_LEFT -> orbitCamera.rotateLongitude(displayResolution.getAsInt(), -1);
-            case ROTATE_RIGHT -> orbitCamera.rotateLongitude(displayResolution.getAsInt(), 1);
+            case ROTATE_LEFT -> orbitCamera.rotateLongitude(-1);
+            case ROTATE_RIGHT -> orbitCamera.rotateLongitude(1);
+            case ROTATE_UP -> orbitCamera.rotateLatitude(1);
+            case ROTATE_DOWN -> orbitCamera.rotateLatitude(-1);
         }
     }
 }

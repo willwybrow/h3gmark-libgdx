@@ -12,5 +12,7 @@ public enum UiAction {
     DETAIL_LESS,
     DETAIL_MORE,
     ROTATE_LEFT,
-    ROTATE_RIGHT
+    ROTATE_RIGHT,
+    ROTATE_UP,
+    ROTATE_DOWN
 }

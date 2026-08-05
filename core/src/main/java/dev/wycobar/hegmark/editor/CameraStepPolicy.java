@@ -1,9 +1,18 @@
 package dev.wycobar.hegmark.editor;
 
 public final class CameraStepPolicy {
-    public float longitudeDegrees(int resolution) {
-        if (resolution < 0 || resolution > 15) throw new IllegalArgumentException("Grid resolution must be 0 through 15");
-        double refinement = Math.pow(Math.sqrt(7.0), Math.max(0, resolution - 2));
-        return (float) Math.max(0.000001, 30.0 / refinement);
+    private static final double DEGREES_PER_SURFACE_GAP = 5.0;
+    private static final double MINIMUM_DEGREES = 0.01;
+    private static final double MAXIMUM_DEGREES = 10.0;
+
+    public float longitudeDegrees(double distanceToSurface) {
+        if (!Double.isFinite(distanceToSurface) || distanceToSurface < 0.0) {
+            throw new IllegalArgumentException("Distance to surface must be finite and non-negative");
+        }
+        return (float) Math.clamp(
+            distanceToSurface * DEGREES_PER_SURFACE_GAP,
+            MINIMUM_DEGREES,
+            MAXIMUM_DEGREES
+        );
     }
 }
