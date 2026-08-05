@@ -15,7 +15,7 @@ class EditorStateTest {
         var cell = fixture.planet().cellAt(new PlanetLatLon(0.0, 0.0), 3);
         state.requestOverwriteConfirmation(cell, 3);
         assertTrue(state.isOverwriteConfirmed(cell));
-        assertFalse(state.isOverwriteConfirmed(cell.neighbors().getFirst()));
+        assertFalse(state.isOverwriteConfirmed(cell.neighbours().getFirst()));
 
         state.setPaintElevationMeters(2_000.0);
         assertFalse(state.isOverwriteConfirmed(cell));

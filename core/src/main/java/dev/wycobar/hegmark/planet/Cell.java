@@ -52,12 +52,12 @@ public final class Cell {
             : planet.grid().children(id, resolution() + 1).stream().map(planet::cell).toList();
     }
 
-    public List<Cell> neighbors() {
+    public List<Cell> neighbours() {
         return planet.grid().neighbours(id).stream().map(planet::cell).toList();
     }
 
     public List<Cell> siblings() {
-        return planet.grid().pa
+        return planet.grid().siblings(id).stream().map(planet::cell).toList();
     }
 
     public boolean contains(CellId candidate) {
