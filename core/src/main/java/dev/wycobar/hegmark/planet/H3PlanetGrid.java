@@ -4,6 +4,7 @@ import com.uber.h3core.H3Core;
 import com.uber.h3core.util.LatLng;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public final class H3PlanetGrid implements PlanetGrid {
@@ -44,7 +45,20 @@ public final class H3PlanetGrid implements PlanetGrid {
     }
 
     @Override
-    public List<CellId> neighbors(CellId cell) {
+    public List<CellId> siblings(CellId cell) {
+        var resolution = h3.getResolution(cell.value());
+        if (resolution == 0) {
+            return Collections.emptyList();
+        }
+        return h3.cellToChildren(h3.cellToParent(cell.value(), resolution - 1), resolution)
+            .stream()
+            .filter(id -> id != cell.value())
+            .map(CellId::new)
+            .toList();
+    }
+
+    @Override
+    public List<CellId> neighbours(CellId cell) {
         return h3.gridDisk(cell.value(), 1).stream()
             .filter(value -> value != cell.value())
             .map(CellId::new)
@@ -75,11 +89,6 @@ public final class H3PlanetGrid implements PlanetGrid {
     }
 
     @Override
-    public boolean isPentagon(CellId cell) {
-        return h3.isPentagon(cell.value());
-    }
-
-    @Override
     public int maximumResolution() {
         return 15;
     }
@@ -90,7 +99,7 @@ public final class H3PlanetGrid implements PlanetGrid {
         hash = Long.rotateLeft(hash, 21) ^ featureId.hashCode();
         hash = Long.rotateLeft(hash, 17) ^ algorithmVersion;
         hash ^= hash >>> 33;
-        hash *= 0xff51afd7ed558ccdl;
+        hash *= 0xff51afd7ed558ccdL;
         hash ^= hash >>> 33;
         return hash;
     }

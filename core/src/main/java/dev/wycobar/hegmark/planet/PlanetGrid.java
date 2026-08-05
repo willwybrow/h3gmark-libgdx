@@ -13,15 +13,15 @@ public interface PlanetGrid {
 
     List<CellId> children(CellId cell, int childResolution);
 
-    List<CellId> neighbors(CellId cell);
+    List<CellId> neighbours(CellId cell);
+
+    List<CellId> siblings(CellId cell);
 
     List<CellId> disk(CellId center, int radius);
 
     List<CellId> cellsAtResolution(int resolution);
 
     int resolution(CellId cell);
-
-    boolean isPentagon(CellId cell);
 
     int maximumResolution();
 

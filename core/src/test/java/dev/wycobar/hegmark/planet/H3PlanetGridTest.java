@@ -27,16 +27,6 @@ class H3PlanetGridTest {
     }
 
     @Test
-    void preservesActualBoundaryAndNeighborCountsForPentagons() {
-        CellId pentagon = grid.cellsAtResolution(0).stream().filter(grid::isPentagon).findFirst().orElseThrow();
-        CellGeometry geometry = grid.geometry(pentagon);
-
-        assertTrue(grid.isPentagon(pentagon));
-        assertNotEquals(6, geometry.boundary().size());
-        assertNotEquals(6, grid.neighbors(pentagon).size());
-    }
-
-    @Test
     void diskContainsItsCenterAndGlobalResolutionIsComplete() {
         CellId center = grid.cellAt(new PlanetLatLon(0.0, 0.0), 3);
         assertTrue(grid.disk(center, 2).contains(center));

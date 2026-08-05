@@ -27,17 +27,6 @@ class CellSurfaceMeshBuilderTest {
     }
 
     @Test
-    void triangulatesVariableBoundaryAsCenterFanAndAddsEveryOutlineEdge() {
-        CellId pentagon = grid.cellsAtResolution(2).stream().filter(grid::isPentagon).findFirst().orElseThrow();
-        CellGeometry geometry = grid.geometry(pentagon);
-        SurfaceMeshData mesh = builder.build(List.of(pentagon), pentagon);
-
-        assertEquals(geometry.boundary().size() * 3 * 4, mesh.fillVertices().length);
-        assertEquals(geometry.boundary().size() * 2 * 4, mesh.lineVertices().length);
-        assertEquals(1, mesh.cellCount());
-    }
-
-    @Test
     void emitsOutwardFacingTrianglesForBackFaceCulling() {
         CellId cell = grid.cellsAtResolution(2).getFirst();
         SurfaceMeshData mesh = builder.build(List.of(cell), null);

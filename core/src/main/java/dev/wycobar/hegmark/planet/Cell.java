@@ -1,8 +1,5 @@
 package dev.wycobar.hegmark.planet;
 
-import dev.wycobar.hegmark.feature.ResolvedFeatureValue;
-import dev.wycobar.hegmark.feature.StoredFeature;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,10 +7,12 @@ import java.util.Optional;
 public final class Cell {
     private final Planet planet;
     private final CellId id;
+    private final Layer layer;
 
     Cell(Planet planet, CellId id) {
         this.planet = Objects.requireNonNull(planet, "planet");
         this.id = Objects.requireNonNull(id, "id");
+        this.layer = Layer.valueOf(planet.grid().resolution(id));
     }
 
     public Planet planet() {
@@ -54,7 +53,11 @@ public final class Cell {
     }
 
     public List<Cell> neighbors() {
-        return planet.grid().neighbors(id).stream().map(planet::cell).toList();
+        return planet.grid().neighbours(id).stream().map(planet::cell).toList();
+    }
+
+    public List<Cell> siblings() {
+        return planet.grid().pa
     }
 
     public boolean contains(CellId candidate) {
