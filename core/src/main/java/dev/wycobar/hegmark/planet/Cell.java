@@ -7,12 +7,10 @@ import java.util.Optional;
 public final class Cell {
     private final Planet planet;
     private final CellId id;
-    private final Layer layer;
 
     Cell(Planet planet, CellId id) {
         this.planet = Objects.requireNonNull(planet, "planet");
         this.id = Objects.requireNonNull(id, "id");
-        this.layer = Layer.valueOf(planet.grid().resolution(id));
     }
 
     public Planet planet() {
@@ -21,6 +19,10 @@ public final class Cell {
 
     public CellId id() {
         return id;
+    }
+
+    public Layer layer() {
+        return Layer.valueOf(planet.grid().resolution(id));
     }
 
     public int resolution() {
