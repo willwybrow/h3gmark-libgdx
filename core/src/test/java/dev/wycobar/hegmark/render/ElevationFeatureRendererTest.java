@@ -24,6 +24,23 @@ class ElevationFeatureRendererTest {
         assertEquals(0.0f, actual.green());
         assertEquals(0.0f, actual.blue());
     }
+
+    @Test
+    void eightThousandMetresIsWhite() {
+        var actual = renderer.color(8000d);
+
+        assertEquals(1.0f, actual.red());
+        assertEquals(1.0f, actual.green());
+        assertEquals(1.0f, actual.blue());
+    }
+    @Test
+    void minusEightThousandMetresIsBlack() {
+        var actual = renderer.color(-8000d);
+
+        assertEquals(0.0f, actual.red());
+        assertEquals(0.0f, actual.green());
+        assertEquals(0.0f, actual.blue());
+    }
     @Test
     void seaLevelIsGrey() {
         var actual = renderer.color(0d);
