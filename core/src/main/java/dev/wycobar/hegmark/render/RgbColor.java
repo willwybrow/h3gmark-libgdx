@@ -1,4 +1,4 @@
-package dev.wycobar.hegmark.feature;
+package dev.wycobar.hegmark.render;
 
 public record RgbColor(float red, float green, float blue) {
     public RgbColor {

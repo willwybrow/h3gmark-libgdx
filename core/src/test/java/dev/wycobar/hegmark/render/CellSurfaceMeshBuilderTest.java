@@ -1,10 +1,6 @@
 package dev.wycobar.hegmark.render;
 
-import dev.wycobar.hegmark.feature.elevation.ElevationStyle;
-import dev.wycobar.hegmark.planet.CellGeometry;
 import dev.wycobar.hegmark.planet.CellId;
-import dev.wycobar.hegmark.planet.H3PlanetGrid;
-import dev.wycobar.hegmark.planet.PlanetModel;
 import dev.wycobar.hegmark.planet.PlanetGrid;
 import dev.wycobar.hegmark.support.TestPlanetFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +19,9 @@ class CellSurfaceMeshBuilderTest {
     void setUp() {
         var fixture = TestPlanetFactory.create(12L);
         grid = fixture.grid();
-        builder = new CellSurfaceMeshBuilder(fixture.planet(), fixture.elevation(), new ElevationStyle());
+        FeatureRendererRegistry renderers = new FeatureRendererRegistry();
+        renderers.register(fixture.elevation(), new ElevationFeatureRenderer());
+        builder = new CellSurfaceMeshBuilder(fixture.planet(), fixture.elevation(), renderers);
     }
 
     @Test

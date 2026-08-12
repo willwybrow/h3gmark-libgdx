@@ -3,9 +3,7 @@ package dev.wycobar.hegmark.render;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
-import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
-import dev.wycobar.hegmark.feature.elevation.ElevationStyle;
-import dev.wycobar.hegmark.feature.RgbColor;
+import dev.wycobar.hegmark.feature.Feature;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellGeometry;
 import dev.wycobar.hegmark.planet.CellId;
@@ -16,22 +14,22 @@ import dev.wycobar.hegmark.planet.Cell;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 public final class CellSurfaceMeshBuilder {
     private final Planet world;
     private final PlanetModel planet;
-    private final ElevationFeature elevationFeature;
-    private final ElevationStyle style;
+    private final Function<Cell, RgbColor> cellColor;
 
-    public CellSurfaceMeshBuilder(
+    public <T> CellSurfaceMeshBuilder(
         Planet world,
-        ElevationFeature elevationFeature,
-        ElevationStyle style
+        Feature<T> feature,
+        FeatureRendererRegistry featureRenderers
     ) {
         this.world = world;
         this.planet = world.definition();
-        this.elevationFeature = elevationFeature;
-        this.style = style;
+        FeatureRenderer<T> featureRenderer = featureRenderers.rendererFor(feature);
+        this.cellColor = cell -> featureRenderer.color(feature.valueAt(cell));
     }
 
     public SurfaceMeshData build(List<CellId> cells, CellId selectedCell) {
@@ -53,7 +51,7 @@ public final class CellSurfaceMeshBuilder {
     ) {
         Cell domainCell = world.cell(cell);
         CellGeometry geometry = domainCell.geometry();
-        RgbColor rgb = style.color(elevationFeature.valueAt(domainCell), planet.seaLevelMeters());
+        RgbColor rgb = cellColor.apply(domainCell);
         float fillColor = Color.toFloatBits(rgb.red(), rgb.green(), rgb.blue(), 1.0f);
         float lineColor = selected
             ? Color.toFloatBits(1.0f, 0.85f, 0.1f, 1.0f)

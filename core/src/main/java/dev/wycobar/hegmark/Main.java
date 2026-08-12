@@ -13,7 +13,6 @@ import dev.wycobar.hegmark.editor.SelectionProjector;
 import dev.wycobar.hegmark.editor.VisibleCellSelector;
 import dev.wycobar.hegmark.feature.FeatureChangeBus;
 import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
-import dev.wycobar.hegmark.feature.elevation.ElevationStyle;
 import dev.wycobar.hegmark.feature.InMemoryFeatureValueStore;
 import dev.wycobar.hegmark.feature.FeatureRegistry;
 import dev.wycobar.hegmark.planet.CartesianPoint;
@@ -25,6 +24,8 @@ import dev.wycobar.hegmark.planet.PlanetLatLon;
 import dev.wycobar.hegmark.planet.PlanetModel;
 import dev.wycobar.hegmark.planet.Planet;
 import dev.wycobar.hegmark.render.CellSurfaceRenderer;
+import dev.wycobar.hegmark.render.ElevationFeatureRenderer;
+import dev.wycobar.hegmark.render.FeatureRendererRegistry;
 import dev.wycobar.hegmark.render.OrbitCamera;
 import dev.wycobar.hegmark.render.PoleMarkerRenderer;
 
@@ -62,9 +63,11 @@ public class Main extends ApplicationAdapter {
         featureRegistry = new FeatureRegistry();
         featureRegistry.register(elevationFeature);
         world = new Planet(planet, grid, featureRegistry, store, changeBus);
+        FeatureRendererRegistry featureRenderers = new FeatureRendererRegistry();
+        featureRenderers.register(elevationFeature, new ElevationFeatureRenderer());
         visibleCells = new VisibleCellSelector(grid);
         selectionProjector = new SelectionProjector(grid);
-        surfaceRenderer = new CellSurfaceRenderer(world, elevationFeature, new ElevationStyle());
+        surfaceRenderer = new CellSurfaceRenderer(world, elevationFeature, featureRenderers);
         poleMarkerRenderer = new PoleMarkerRenderer(planet);
         ui = new DirectEditorUi(elevationFeature);
         input = new EditorInputController(

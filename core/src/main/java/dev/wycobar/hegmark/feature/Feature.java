@@ -5,7 +5,7 @@ import dev.wycobar.hegmark.planet.Layer;
 
 import java.util.Optional;
 
-interface Feature<T> {
+public interface Feature<T> {
     String id();
 
     String name();
