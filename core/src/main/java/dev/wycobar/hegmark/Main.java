@@ -57,7 +57,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void create() {
         orbitCamera = new OrbitCamera();
-        planet = new PlanetModel("Rinn", 5_994_000.0, 5_994_000.0, 0.0, 0x48a9dL);
+        planet = new PlanetModel("Rinn", 5_994_000.0, 5_994_000.0, 0.0, 0.0, 0x48a9dL);
         grid = new H3PlanetGrid();
         InMemoryFeatureValueStore store = new InMemoryFeatureValueStore();
 

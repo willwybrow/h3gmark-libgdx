@@ -1,10 +1,15 @@
 package dev.wycobar.hegmark.feature;
 
 
-public abstract class ComputedFeature<T> implements Feature<T> {
-    protected final StoredFeature<?> computedFrom;
+import java.util.Optional;
 
-    protected ComputedFeature(StoredFeature<?> computedFrom) {
-        this.computedFrom = computedFrom;
+public abstract class ComputedFeature<T> implements Feature<T> {
+
+    protected ComputedFeature() {
+    }
+
+    @Override
+    final public Optional<ResolutionRange> settableRange() {
+        return Optional.empty();
     }
 }

@@ -12,9 +12,8 @@ public final class LandFeature extends ComputedFeature<Boolean> {
     private static final ResolutionRange VIEWABLE = Layer.anywhere();
     private final ElevationFeature elevationFeature;
 
-    public LandFeature(ElevationFeature computedFrom) {
-        super(computedFrom);
-        this.elevationFeature = computedFrom;
+    public LandFeature(ElevationFeature elevationFeature) {
+        this.elevationFeature = elevationFeature;
     }
 
     @Override
@@ -30,11 +29,6 @@ public final class LandFeature extends ComputedFeature<Boolean> {
     @Override
     public ResolutionRange viewableRange() {
         return VIEWABLE;
-    }
-
-    @Override
-    public Optional<ResolutionRange> settableRange() {
-        return Optional.empty();
     }
 
     @Override

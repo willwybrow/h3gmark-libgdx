@@ -7,6 +7,7 @@ public record PlanetModel(
     double equatorialRadiusMeters,
     double polarRadiusMeters,
     double seaLevelMeters,
+    double axialTiltDegrees,
     long worldSeed
 ) {
     public PlanetModel {
