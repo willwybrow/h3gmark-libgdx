@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PlanetModelTest {
-    private final PlanetModel planet = new PlanetModel("Test", 6_000_000.0, 5_000_000.0, 0.0, 42L);
+    private final PlanetModel planet = new PlanetModel("Test", 6_000_000.0, 5_000_000.0, 0.0, 0.0, 42L);
 
     @Test
     void convertsEquatorAndPoleThroughFictionalRadii() {
@@ -27,7 +27,7 @@ class PlanetModelTest {
 
     @Test
     void rejectsInvalidPlanetAndCoordinates() {
-        assertThrows(IllegalArgumentException.class, () -> new PlanetModel("", 1.0, 1.0, 0.0, 0L));
+        assertThrows(IllegalArgumentException.class, () -> new PlanetModel("", 1.0, 1.0, 0.0, 0.0, 0L));
         assertThrows(IllegalArgumentException.class, () -> new PlanetLatLon(91.0, 0.0));
         assertThrows(IllegalArgumentException.class, () -> new PlanetLatLon(0.0, 181.0));
     }

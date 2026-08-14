@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PlanetRayPickerTest {
-    private final PlanetModel planet = new PlanetModel("Test", 6_000_000.0, 5_000_000.0, 0.0, 0L);
+    private final PlanetModel planet = new PlanetModel("Test", 6_000_000.0, 5_000_000.0, 0.0, 0.0, 0L);
     private final PlanetRayPicker picker = new PlanetRayPicker();
 
     @Test

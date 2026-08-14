@@ -16,6 +16,8 @@ import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
 import dev.wycobar.hegmark.feature.InMemoryFeatureValueStore;
 import dev.wycobar.hegmark.feature.FeatureRegistry;
 import dev.wycobar.hegmark.feature.elevation.LandFeature;
+import dev.wycobar.hegmark.feature.temperature.OuterCrustTemperature;
+import dev.wycobar.hegmark.feature.temperature.SeaTemperature;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.H3PlanetGrid;
@@ -28,8 +30,10 @@ import dev.wycobar.hegmark.render.CellSurfaceRenderer;
 import dev.wycobar.hegmark.render.ElevationFeatureRenderer;
 import dev.wycobar.hegmark.render.FeatureRendererRegistry;
 import dev.wycobar.hegmark.render.LandFeatureRenderer;
+import dev.wycobar.hegmark.render.OuterCrustTemperatureFeatureRenderer;
 import dev.wycobar.hegmark.render.OrbitCamera;
 import dev.wycobar.hegmark.render.PoleMarkerRenderer;
+import dev.wycobar.hegmark.render.SeaTemperatureFeatureRenderer;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,16 +68,22 @@ public class Main extends ApplicationAdapter {
         FeatureChangeBus changeBus = new FeatureChangeBus();
         ElevationFeature elevationFeature = new ElevationFeature(store, changeBus);
         LandFeature landFeature = new LandFeature(elevationFeature);
+        SeaTemperature seaTemperature = new SeaTemperature(elevationFeature, landFeature);
+        OuterCrustTemperature outerCrustTemperature = new OuterCrustTemperature(elevationFeature, landFeature);
 
         featureRegistry = new FeatureRegistry();
         featureRegistry.register(elevationFeature);
         featureRegistry.register(landFeature);
+        featureRegistry.register(seaTemperature);
+        featureRegistry.register(outerCrustTemperature);
 
         world = new Planet(planet, grid, featureRegistry, store, changeBus);
 
         FeatureRendererRegistry featureRenderers = new FeatureRendererRegistry();
         featureRenderers.register(elevationFeature, new ElevationFeatureRenderer());
         featureRenderers.register(landFeature, new LandFeatureRenderer());
+        featureRenderers.register(seaTemperature, new SeaTemperatureFeatureRenderer());
+        featureRenderers.register(outerCrustTemperature, new OuterCrustTemperatureFeatureRenderer());
         state.selectRenderer(featureRenderers.availableFeatures().getFirst().id());
 
         visibleCells = new VisibleCellSelector(grid);

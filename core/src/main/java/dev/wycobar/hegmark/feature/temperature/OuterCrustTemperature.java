@@ -4,12 +4,12 @@ import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
 import dev.wycobar.hegmark.feature.elevation.LandFeature;
 import dev.wycobar.hegmark.planet.Cell;
 
-public class OuterCrustTemperature extends Temperature {
+public final class OuterCrustTemperature extends Temperature {
     /* This is the temperature at the outer edge of the crust; previously called "surface" temperature but the sea also has a surface and sea ice complicates stuff a bit
     So this is the temperature wherever the crust touches something else, whether that's air or water.
 
      */
-    protected OuterCrustTemperature(ElevationFeature elevationFeature, LandFeature landFeature) {
+    public OuterCrustTemperature(ElevationFeature elevationFeature, LandFeature landFeature) {
         super(elevationFeature, landFeature);
     }
 
