@@ -16,6 +16,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DirectEditorUi implements Disposable {
+    private static final List<ElevationPreset> ELEVATION_PRESETS = List.of(
+        new ElevationPreset(-8_000.0, "-8000 m"),
+        new ElevationPreset(-1_500.0, "-1500 m"),
+        new ElevationPreset(-750.0, "-750 m"),
+        new ElevationPreset(-150.0, "-150 m"),
+        new ElevationPreset(0.0, "0 m"),
+        new ElevationPreset(150.0, "+150 m"),
+        new ElevationPreset(500.0, "+500 m"),
+        new ElevationPreset(2_000.0, "+2000 m"),
+        new ElevationPreset(4_000.0, "+4000 m"),
+        new ElevationPreset(8_000.0, "+8000 m")
+    );
+
     private final ElevationFeature elevationFeature;
     private final List<RenderableFeature> renderableFeatures;
     private final ShapeRenderer shapes = new ShapeRenderer();
@@ -63,16 +76,27 @@ public final class DirectEditorUi implements Disposable {
         buttons.add(button(UiAction.ERASE_TOOL, "Erase", x + (quarter + 6) * 3, toolY, quarter, state.tool() == EditorTool.ERASE, editable));
 
         float paintY = toolY + 48.0f;
-        buttons.add(button(UiAction.ELEVATION_DEEP, "-1500 m", x, paintY, half, state.paintElevationMeters() == -1_500.0, true));
-        buttons.add(button(UiAction.ELEVATION_SEA, "0 m", x + half + 6, paintY, half, state.paintElevationMeters() == 0.0, true));
-        buttons.add(button(UiAction.ELEVATION_LOW, "+500 m", x, paintY + 36, half, state.paintElevationMeters() == 500.0, true));
-        buttons.add(button(UiAction.ELEVATION_HIGH, "+2000 m", x + half + 6, paintY + 36, half, state.paintElevationMeters() == 2_000.0, true));
-        buttons.add(button(UiAction.DETAIL_LESS, "Zoom out", x, paintY + 78, half, false, true));
-        buttons.add(button(UiAction.DETAIL_MORE, "Zoom in", x + half + 6, paintY + 78, half, false, true));
-        buttons.add(button(UiAction.ROTATE_LEFT, "Rotate left", x, paintY + 114, half, false, true));
-        buttons.add(button(UiAction.ROTATE_RIGHT, "Rotate right", x + half + 6, paintY + 114, half, false, true));
-        buttons.add(button(UiAction.ROTATE_UP, "Rotate up", x, paintY + 150, half, false, true));
-        buttons.add(button(UiAction.ROTATE_DOWN, "Rotate down", x + half + 6, paintY + 150, half, false, true));
+        for (int index = 0; index < ELEVATION_PRESETS.size(); index++) {
+            ElevationPreset preset = ELEVATION_PRESETS.get(index);
+            float presetX = x + (index % 2) * (half + 6.0f);
+            float presetY = paintY + (index / 2) * 36.0f;
+            buttons.add(new UiButton(
+                UiAction.ELEVATION_VALUE,
+                Double.toString(preset.meters()),
+                preset.label(),
+                new UiRect(presetX, presetY, half, 30.0f),
+                state.paintElevationMeters() == preset.meters(),
+                true
+            ));
+        }
+
+        float cameraY = paintY + ((ELEVATION_PRESETS.size() + 1) / 2) * 36.0f + 6.0f;
+        buttons.add(button(UiAction.DETAIL_LESS, "Zoom out", x, cameraY, half, false, true));
+        buttons.add(button(UiAction.DETAIL_MORE, "Zoom in", x + half + 6, cameraY, half, false, true));
+        buttons.add(button(UiAction.ROTATE_LEFT, "Rotate left", x, cameraY + 36, half, false, true));
+        buttons.add(button(UiAction.ROTATE_RIGHT, "Rotate right", x + half + 6, cameraY + 36, half, false, true));
+        buttons.add(button(UiAction.ROTATE_UP, "Rotate up", x, cameraY + 72, half, false, true));
+        buttons.add(button(UiAction.ROTATE_DOWN, "Rotate down", x + half + 6, cameraY + 72, half, false, true));
         return List.copyOf(buttons);
     }
 
@@ -92,14 +116,15 @@ public final class DirectEditorUi implements Disposable {
         batch.begin();
         font.setColor(Color.WHITE);
         float x = layout.panelX() + Math.min(18.0f, layout.panelWidth() / 8.0f);
+        float informationY = controlsBottom() + 18.0f;
         draw("HEGMARK / FEATURES", x, layout.height() - 20);
-        draw("View: grid res " + displayResolution + "  |  " + renderedCells + " cells", x, layout.height() - 286);
+        draw("View: grid res " + displayResolution + "  |  " + renderedCells + " cells", x, layout.height() - informationY);
         draw(
             "View " + elevationFeature.viewableRange().minimum() + "-" + elevationFeature.viewableRange().maximum()
                 + "  |  Set " + elevationFeature.settableRange().orElseThrow().minimum()
                 + "-" + elevationFeature.settableRange().orElseThrow().maximum(),
             x,
-            layout.height() - 302
+            layout.height() - informationY - 16.0f
         );
         for (UiButton button : buttons(layout, state)) {
             font.setColor(button.enabled() ? Color.WHITE : Color.GRAY);
@@ -107,7 +132,7 @@ public final class DirectEditorUi implements Disposable {
             draw(button.label(), button.bounds().x() + 8.0f, renderY + 20.0f);
         }
         font.setColor(Color.WHITE);
-        drawSelection(state, x, layout.height() - 310);
+        drawSelection(state, x, layout.height() - informationY - 32.0f);
         batch.end();
 
         shapes.begin(ShapeRenderer.ShapeType.Filled);
@@ -152,6 +177,15 @@ public final class DirectEditorUi implements Disposable {
         shapes.rect(bounds.x(), renderY, bounds.width(), bounds.height());
     }
 
+    private float controlsBottom() {
+        float rendererRows = Math.max(1, (renderableFeatures.size() + 1) / 2);
+        float toolY = 44.0f + rendererRows * 36.0f;
+        float paintY = toolY + 48.0f;
+        float elevationRows = (ELEVATION_PRESETS.size() + 1) / 2;
+        float cameraY = paintY + elevationRows * 36.0f + 6.0f;
+        return cameraY + 102.0f;
+    }
+
     private UiButton button(UiAction action, String label, float x, float y, float width, boolean active, boolean enabled) {
         return new UiButton(action, label, new UiRect(x, y, width, 30.0f), active, enabled);
     }
@@ -165,5 +199,8 @@ public final class DirectEditorUi implements Disposable {
         shapes.dispose();
         batch.dispose();
         font.dispose();
+    }
+
+    private record ElevationPreset(double meters, String label) {
     }
 }

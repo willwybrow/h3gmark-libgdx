@@ -172,10 +172,7 @@ public final class EditorInputController extends InputAdapter {
             case FILL_GAPS_TOOL -> state.setTool(EditorTool.FILL_GAPS);
             case OVERWRITE_TOOL -> state.setTool(EditorTool.OVERWRITE);
             case ERASE_TOOL -> state.setTool(EditorTool.ERASE);
-            case ELEVATION_DEEP -> state.setPaintElevationMeters(-1_500.0);
-            case ELEVATION_SEA -> state.setPaintElevationMeters(0.0);
-            case ELEVATION_LOW -> state.setPaintElevationMeters(500.0);
-            case ELEVATION_HIGH -> state.setPaintElevationMeters(2_000.0);
+            case ELEVATION_VALUE -> state.setPaintElevationMeters(Double.parseDouble(button.targetId()));
             case DETAIL_LESS -> orbitCamera.zoom(3.0f);
             case DETAIL_MORE -> orbitCamera.zoom(-3.0f);
             case ROTATE_LEFT -> orbitCamera.rotateLongitude(-1);
