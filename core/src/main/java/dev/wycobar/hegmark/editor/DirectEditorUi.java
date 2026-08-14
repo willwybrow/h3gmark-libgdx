@@ -10,7 +10,7 @@ import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
 import dev.wycobar.hegmark.planet.Layer;
 import dev.wycobar.hegmark.planet.PlanetLatLon;
 import dev.wycobar.hegmark.planet.Cell;
-import dev.wycobar.hegmark.render.RenderableFeature;
+import dev.wycobar.hegmark.render.FeatureRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ public final class DirectEditorUi implements Disposable {
     );
 
     private final ElevationFeature elevationFeature;
-    private final List<RenderableFeature> renderableFeatures;
+    private final List<FeatureRenderer> featureRenderers;
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final SpriteBatch batch = new SpriteBatch();
     private final BitmapFont font = new BitmapFont();
@@ -39,10 +39,10 @@ public final class DirectEditorUi implements Disposable {
 
     public DirectEditorUi(
         ElevationFeature elevationFeature,
-        List<RenderableFeature> renderableFeatures
+        List<FeatureRenderer> featureRenderers
     ) {
         this.elevationFeature = elevationFeature;
-        this.renderableFeatures = List.copyOf(renderableFeatures);
+        this.featureRenderers = List.copyOf(featureRenderers);
         font.getData().setScale(1.0f);
     }
 
@@ -54,21 +54,21 @@ public final class DirectEditorUi implements Disposable {
         boolean editable = elevationFeature.isSettableAt(displayResolution);
         List<UiButton> buttons = new ArrayList<>();
         float half = (width - 6.0f) / 2.0f;
-        for (int index = 0; index < renderableFeatures.size(); index++) {
-            RenderableFeature feature = renderableFeatures.get(index);
+        for (int index = 0; index < featureRenderers.size(); index++) {
+            FeatureRenderer renderer = featureRenderers.get(index);
             float rendererX = x + (index % 2) * (half + 6.0f);
             float rendererY = 38.0f + (index / 2) * 36.0f;
             buttons.add(new UiButton(
-                UiAction.FEATURE_RENDERER,
-                feature.id(),
-                feature.name(),
+                UiAction.SELECT_RENDERER,
+                renderer.id(),
+                renderer.name(),
                 new UiRect(rendererX, rendererY, half, 30.0f),
-                feature.id().equals(state.activeRendererId()),
+                renderer.id().equals(state.activeRendererId()),
                 true
             ));
         }
 
-        float rendererRows = Math.max(1, (renderableFeatures.size() + 1) / 2);
+        float rendererRows = Math.max(1, (featureRenderers.size() + 1) / 2);
         float toolY = 44.0f + rendererRows * 36.0f;
         buttons.add(button(UiAction.SELECT_TOOL, "Select", x, toolY, quarter, state.tool() == EditorTool.SELECT, true));
         buttons.add(button(UiAction.FILL_GAPS_TOOL, "Fill", x + quarter + 6, toolY, quarter, state.tool() == EditorTool.FILL_GAPS, editable));
@@ -178,7 +178,7 @@ public final class DirectEditorUi implements Disposable {
     }
 
     private float controlsBottom() {
-        float rendererRows = Math.max(1, (renderableFeatures.size() + 1) / 2);
+        float rendererRows = Math.max(1, (featureRenderers.size() + 1) / 2);
         float toolY = 44.0f + rendererRows * 36.0f;
         float paintY = toolY + 48.0f;
         float elevationRows = (ELEVATION_PRESETS.size() + 1) / 2;

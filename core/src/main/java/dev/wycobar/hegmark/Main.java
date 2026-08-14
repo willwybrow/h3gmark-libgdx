@@ -28,6 +28,7 @@ import dev.wycobar.hegmark.planet.PlanetModel;
 import dev.wycobar.hegmark.planet.Planet;
 import dev.wycobar.hegmark.render.CellSurfaceRenderer;
 import dev.wycobar.hegmark.render.ElevationFeatureRenderer;
+import dev.wycobar.hegmark.render.FeatureRenderer;
 import dev.wycobar.hegmark.render.FeatureRendererRegistry;
 import dev.wycobar.hegmark.render.LandFeatureRenderer;
 import dev.wycobar.hegmark.render.OuterCrustTemperatureFeatureRenderer;
@@ -80,17 +81,18 @@ public class Main extends ApplicationAdapter {
         world = new Planet(planet, grid, featureRegistry, store, changeBus);
 
         FeatureRendererRegistry featureRenderers = new FeatureRendererRegistry();
-        featureRenderers.register(elevationFeature, new ElevationFeatureRenderer());
-        featureRenderers.register(landFeature, new LandFeatureRenderer());
-        featureRenderers.register(seaTemperature, new SeaTemperatureFeatureRenderer());
-        featureRenderers.register(outerCrustTemperature, new OuterCrustTemperatureFeatureRenderer());
-        state.selectRenderer(featureRenderers.availableFeatures().getFirst().id());
+        featureRenderers.register(new ElevationFeatureRenderer(elevationFeature));
+        featureRenderers.register(new LandFeatureRenderer(landFeature));
+        featureRenderers.register(new SeaTemperatureFeatureRenderer(seaTemperature));
+        featureRenderers.register(new OuterCrustTemperatureFeatureRenderer(outerCrustTemperature));
+        FeatureRenderer initialRenderer = featureRenderers.availableRenderers().getFirst();
+        state.selectRenderer(initialRenderer.id());
 
         visibleCells = new VisibleCellSelector(grid);
         selectionProjector = new SelectionProjector(grid);
-        surfaceRenderer = new CellSurfaceRenderer(world, elevationFeature, featureRenderers);
+        surfaceRenderer = new CellSurfaceRenderer(world, initialRenderer.id(), featureRenderers);
         poleMarkerRenderer = new PoleMarkerRenderer(planet);
-        ui = new DirectEditorUi(elevationFeature, featureRenderers.availableFeatures());
+        ui = new DirectEditorUi(elevationFeature, featureRenderers.availableRenderers());
         input = new EditorInputController(
             layout,
             state,
@@ -124,7 +126,7 @@ public class Main extends ApplicationAdapter {
         displayResolution = nextResolution;
         focusCell = nextFocus;
         if (rebuild) {
-            surfaceRenderer.selectFeature(state.activeRendererId());
+            surfaceRenderer.selectRenderer(state.activeRendererId());
             List<CellId> cells = visibleCells.select(focusCell, displayResolution);
             CellId displayedSelection = state.selectedCell()
                 .map(cell -> selectionProjector.atResolution(cell.id(), displayResolution))

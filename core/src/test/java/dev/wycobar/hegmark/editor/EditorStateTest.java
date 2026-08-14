@@ -13,10 +13,10 @@ class EditorStateTest {
     void rendererSelectionReportsChanges() {
         EditorState state = new EditorState();
 
-        assertTrue(state.selectRenderer("elevation"));
-        assertFalse(state.selectRenderer("elevation"));
-        assertTrue(state.selectRenderer("land"));
-        assertEquals("land", state.activeRendererId());
+        assertTrue(state.selectRenderer("elevation-renderer"));
+        assertFalse(state.selectRenderer("elevation-renderer"));
+        assertTrue(state.selectRenderer("land-renderer"));
+        assertEquals("land-renderer", state.activeRendererId());
     }
 
     @Test

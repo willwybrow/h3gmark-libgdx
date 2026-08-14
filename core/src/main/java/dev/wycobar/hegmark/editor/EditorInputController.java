@@ -165,8 +165,11 @@ public final class EditorInputController extends InputAdapter {
 
     private void handle(UiButton button) {
         switch (button.action()) {
-            case FEATURE_RENDERER -> {
-                if (state.selectRenderer(button.targetId())) rebuildRequested = true;
+            case SELECT_RENDERER -> {
+                if (state.selectRenderer(button.targetId())) {
+                    state.setMessage("Viewing " + button.label());
+                    rebuildRequested = true;
+                }
             }
             case SELECT_TOOL -> state.setTool(EditorTool.SELECT);
             case FILL_GAPS_TOOL -> state.setTool(EditorTool.FILL_GAPS);

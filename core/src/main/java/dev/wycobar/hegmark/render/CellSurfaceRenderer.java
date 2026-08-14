@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.math.Matrix4;
-import dev.wycobar.hegmark.feature.Feature;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.PlanetGrid;
 import dev.wycobar.hegmark.planet.PlanetModel;
@@ -43,29 +42,30 @@ public final class CellSurfaceRenderer implements Disposable {
     private final FeatureRendererRegistry featureRenderers;
     private final ShaderProgram shader;
     private CellSurfaceMeshBuilder meshBuilder;
-    private String featureId;
+    private String rendererId;
     private Mesh fillMesh;
     private Mesh lineMesh;
     private int cellCount;
     private CartesianPoint meshOrigin = new CartesianPoint(0.0, 0.0, 0.0);
     private final Matrix4 localProjectionView = new Matrix4();
 
-    public <T> CellSurfaceRenderer(
+    public CellSurfaceRenderer(
         Planet world,
-        Feature<T> feature,
+        String rendererId,
         FeatureRendererRegistry featureRenderers
     ) {
         this.world = world;
         this.featureRenderers = featureRenderers;
-        selectFeature(feature);
+        selectRenderer(rendererId);
         ShaderProgram.pedantic = false;
         shader = new ShaderProgram(VERTEX_SHADER, FRAGMENT_SHADER);
         if (!shader.isCompiled()) throw new IllegalStateException("Cell shader failed to compile: " + shader.getLog());
     }
 
-    public boolean selectFeature(String featureId) {
-        if (featureId.equals(this.featureId)) return false;
-        selectFeature(featureRenderers.feature(featureId));
+    public boolean selectRenderer(String rendererId) {
+        if (rendererId.equals(this.rendererId)) return false;
+        meshBuilder = new CellSurfaceMeshBuilder(world, featureRenderers.rendererFor(rendererId));
+        this.rendererId = rendererId;
         return true;
     }
 
@@ -78,11 +78,6 @@ public final class CellSurfaceRenderer implements Disposable {
 
     public int cellCount() {
         return cellCount;
-    }
-
-    private <T> void selectFeature(Feature<T> feature) {
-        meshBuilder = new CellSurfaceMeshBuilder(world, feature, featureRenderers);
-        featureId = feature.id();
     }
 
     public void render(Camera camera) {

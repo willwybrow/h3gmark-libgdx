@@ -5,44 +5,44 @@ import dev.wycobar.hegmark.support.TestPlanetFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FeatureRendererRegistryTest {
     @Test
-    void findsRendererForRegisteredFeature() {
+    void findsRendererByRendererId() {
         var elevation = TestPlanetFactory.create().elevation();
         FeatureRendererRegistry registry = new FeatureRendererRegistry();
-        RgbColor expected = new RgbColor(0.1f, 0.2f, 0.3f);
-        registry.register(elevation, value -> expected);
+        FeatureRenderer renderer = new ElevationFeatureRenderer(elevation);
+        registry.register(renderer);
 
-        assertEquals(expected, registry.rendererFor(elevation).color(10.0));
+        assertSame(renderer, registry.rendererFor(renderer.id()));
     }
 
     @Test
-    void rejectsDuplicateRendererForFeature() {
+    void rejectsDuplicateRendererId() {
         var elevation = TestPlanetFactory.create().elevation();
         FeatureRendererRegistry registry = new FeatureRendererRegistry();
-        registry.register(elevation, value -> new RgbColor(0.1f, 0.2f, 0.3f));
+        registry.register(new ElevationFeatureRenderer(elevation));
 
         assertThrows(IllegalArgumentException.class, () ->
-            registry.register(elevation, value -> new RgbColor(0.3f, 0.2f, 0.1f))
+            registry.register(new ElevationFeatureRenderer(elevation))
         );
     }
 
     @Test
-    void exposesAvailableFeaturesInRegistrationOrder() {
+    void exposesAvailableRenderersInRegistrationOrder() {
         var elevation = TestPlanetFactory.create().elevation();
         var land = new LandFeature(elevation);
         FeatureRendererRegistry registry = new FeatureRendererRegistry();
-        registry.register(elevation, new ElevationFeatureRenderer());
-        registry.register(land, new LandFeatureRenderer());
+        FeatureRenderer elevationRenderer = new ElevationFeatureRenderer(elevation);
+        FeatureRenderer landRenderer = new LandFeatureRenderer(land);
+        registry.register(elevationRenderer);
+        registry.register(landRenderer);
 
         assertEquals(
-            java.util.List.of(
-                new RenderableFeature("elevation", "Elevation"),
-                new RenderableFeature("land", "Land")
-            ),
-            registry.availableFeatures()
+            java.util.List.of(elevationRenderer, landRenderer),
+            registry.availableRenderers()
         );
     }
 }

@@ -3,7 +3,6 @@ package dev.wycobar.hegmark.render;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
-import dev.wycobar.hegmark.feature.Feature;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellGeometry;
 import dev.wycobar.hegmark.planet.CellId;
@@ -14,22 +13,19 @@ import dev.wycobar.hegmark.planet.Cell;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 public final class CellSurfaceMeshBuilder {
     private final Planet world;
     private final PlanetModel planet;
-    private final Function<Cell, RgbColor> cellColor;
+    private final FeatureRenderer featureRenderer;
 
-    public <T> CellSurfaceMeshBuilder(
+    public CellSurfaceMeshBuilder(
         Planet world,
-        Feature<T> feature,
-        FeatureRendererRegistry featureRenderers
+        FeatureRenderer featureRenderer
     ) {
         this.world = world;
         this.planet = world.definition();
-        FeatureRenderer<T> featureRenderer = featureRenderers.rendererFor(feature);
-        this.cellColor = cell -> featureRenderer.color(feature.valueAt(cell));
+        this.featureRenderer = featureRenderer;
     }
 
     public SurfaceMeshData build(List<CellId> cells, CellId selectedCell) {
@@ -51,7 +47,7 @@ public final class CellSurfaceMeshBuilder {
     ) {
         Cell domainCell = world.cell(cell);
         CellGeometry geometry = domainCell.geometry();
-        RgbColor rgb = cellColor.apply(domainCell);
+        RgbColor rgb = featureRenderer.color(domainCell);
         float fillColor = Color.toFloatBits(rgb.red(), rgb.green(), rgb.blue(), 1.0f);
         float lineColor = selected
             ? Color.toFloatBits(1.0f, 0.85f, 0.1f, 1.0f)

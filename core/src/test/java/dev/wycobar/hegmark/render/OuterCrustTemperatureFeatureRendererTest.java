@@ -1,26 +1,26 @@
 package dev.wycobar.hegmark.render;
 
+import dev.wycobar.hegmark.feature.elevation.LandFeature;
+import dev.wycobar.hegmark.feature.temperature.OuterCrustTemperature;
+import dev.wycobar.hegmark.planet.PlanetLatLon;
+import dev.wycobar.hegmark.support.TestPlanetFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OuterCrustTemperatureFeatureRendererTest {
-    private final OuterCrustTemperatureFeatureRenderer renderer = new OuterCrustTemperatureFeatureRenderer();
-
     @Test
-    void coloursColdCrustBlueAndHotCrustRed() {
-        RgbColor cold = renderer.color(-50.0);
-        RgbColor temperate = renderer.color(0.0);
-        RgbColor hot = renderer.color(50.0);
+    void coloursPolarCrustBluerThanEquatorialCrust() {
+        var fixture = TestPlanetFactory.create();
+        var feature = new OuterCrustTemperature(fixture.elevation(), new LandFeature(fixture.elevation()));
+        var renderer = new OuterCrustTemperatureFeatureRenderer(feature);
+        var polarCell = fixture.planet().cellAt(new PlanetLatLon(85.0, 0.0), 5);
+        var equatorialCell = fixture.planet().cellAt(new PlanetLatLon(0.0, 0.0), 5);
 
-        assertTrue(cold.blue() > cold.red());
-        assertTrue(temperate.green() > cold.green());
-        assertTrue(hot.red() > hot.blue());
-    }
+        RgbColor cold = renderer.color(polarCell);
+        RgbColor warm = renderer.color(equatorialCell);
 
-    @Test
-    void clampsTemperaturesOutsideTheScale() {
-        assertTrue(renderer.color(-100.0).blue() > renderer.color(-100.0).red());
-        assertTrue(renderer.color(100.0).red() > renderer.color(100.0).blue());
+        assertTrue(cold.blue() > warm.blue());
+        assertTrue(warm.red() > cold.red());
     }
 }

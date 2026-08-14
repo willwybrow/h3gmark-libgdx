@@ -1,11 +1,21 @@
 package dev.wycobar.hegmark.render;
 
-public final class SeaTemperatureFeatureRenderer implements FeatureRenderer<Double> {
+import dev.wycobar.hegmark.feature.temperature.SeaTemperature;
+import dev.wycobar.hegmark.planet.Cell;
+
+public final class SeaTemperatureFeatureRenderer implements FeatureRenderer {
     private static final double COLD_CELSIUS = -2.0;
     private static final double HOT_CELSIUS = 35.0;
 
+    private final SeaTemperature seaTemperature;
+
+    public SeaTemperatureFeatureRenderer(SeaTemperature seaTemperature) {
+        this.seaTemperature = seaTemperature;
+    }
+
     @Override
-    public RgbColor color(Double temperatureCelsius) {
+    public RgbColor color(Cell cell) {
+        double temperatureCelsius = seaTemperature.valueAt(cell);
         float heat = (float) Math.clamp(
             (temperatureCelsius - COLD_CELSIUS) / (HOT_CELSIUS - COLD_CELSIUS),
             0.0,

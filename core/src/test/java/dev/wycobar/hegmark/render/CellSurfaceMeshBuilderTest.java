@@ -20,8 +20,9 @@ class CellSurfaceMeshBuilderTest {
         var fixture = TestPlanetFactory.create(12L);
         grid = fixture.grid();
         FeatureRendererRegistry renderers = new FeatureRendererRegistry();
-        renderers.register(fixture.elevation(), new ElevationFeatureRenderer());
-        builder = new CellSurfaceMeshBuilder(fixture.planet(), fixture.elevation(), renderers);
+        FeatureRenderer elevationRenderer = new ElevationFeatureRenderer(fixture.elevation());
+        renderers.register(elevationRenderer);
+        builder = new CellSurfaceMeshBuilder(fixture.planet(), renderers.rendererFor(elevationRenderer.id()));
     }
 
     @Test

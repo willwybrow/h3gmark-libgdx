@@ -1,52 +1,48 @@
 package dev.wycobar.hegmark.render;
 
+import dev.wycobar.hegmark.feature.FeatureMutationStatus;
+import dev.wycobar.hegmark.planet.Cell;
+import dev.wycobar.hegmark.planet.PlanetLatLon;
+import dev.wycobar.hegmark.support.TestPlanetFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ElevationFeatureRendererTest {
-    private final ElevationFeatureRenderer renderer = new ElevationFeatureRenderer();
+    private final TestPlanetFactory.Fixture fixture = TestPlanetFactory.create();
+    private final Cell cell = fixture.planet().cellAt(new PlanetLatLon(0.0, 0.0), 3);
+    private final ElevationFeatureRenderer renderer = new ElevationFeatureRenderer(fixture.elevation());
 
     @Test
     void tenThousandMetresIsWhite() {
-        var actual = renderer.color(10000d);
-
-        assertEquals(1.0f, actual.red());
-        assertEquals(1.0f, actual.green());
-        assertEquals(1.0f, actual.blue());
+        assertEquals(new RgbColor(1.0f, 1.0f, 1.0f), color(10_000.0));
     }
+
     @Test
     void minusTenThousandMetresIsBlack() {
-        var actual = renderer.color(-10000d);
-
-        assertEquals(0.0f, actual.red());
-        assertEquals(0.0f, actual.green());
-        assertEquals(0.0f, actual.blue());
+        assertEquals(new RgbColor(0.0f, 0.0f, 0.0f), color(-10_000.0));
     }
 
     @Test
     void eightThousandMetresIsWhite() {
-        var actual = renderer.color(8000d);
-
-        assertEquals(1.0f, actual.red());
-        assertEquals(1.0f, actual.green());
-        assertEquals(1.0f, actual.blue());
+        assertEquals(new RgbColor(1.0f, 1.0f, 1.0f), color(8_000.0));
     }
+
     @Test
     void minusEightThousandMetresIsBlack() {
-        var actual = renderer.color(-8000d);
-
-        assertEquals(0.0f, actual.red());
-        assertEquals(0.0f, actual.green());
-        assertEquals(0.0f, actual.blue());
+        assertEquals(new RgbColor(0.0f, 0.0f, 0.0f), color(-8_000.0));
     }
+
     @Test
     void seaLevelIsGrey() {
-        var actual = renderer.color(0d);
+        assertEquals(new RgbColor(0.5f, 0.5f, 0.5f), color(0.0));
+    }
 
-        assertEquals(0.5f, actual.red());
-        assertEquals(0.5f, actual.green());
-        assertEquals(0.5f, actual.blue());
+    private RgbColor color(double elevationMeters) {
+        assertEquals(
+            FeatureMutationStatus.APPLIED,
+            fixture.elevation().overwriteAt(cell, elevationMeters, true).status()
+        );
+        return renderer.color(cell);
     }
 }
