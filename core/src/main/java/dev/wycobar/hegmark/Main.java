@@ -15,6 +15,7 @@ import dev.wycobar.hegmark.feature.FeatureChangeBus;
 import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
 import dev.wycobar.hegmark.feature.InMemoryFeatureValueStore;
 import dev.wycobar.hegmark.feature.FeatureRegistry;
+import dev.wycobar.hegmark.feature.elevation.LandFeature;
 import dev.wycobar.hegmark.planet.CartesianPoint;
 import dev.wycobar.hegmark.planet.CellId;
 import dev.wycobar.hegmark.planet.H3PlanetGrid;
@@ -26,6 +27,7 @@ import dev.wycobar.hegmark.planet.Planet;
 import dev.wycobar.hegmark.render.CellSurfaceRenderer;
 import dev.wycobar.hegmark.render.ElevationFeatureRenderer;
 import dev.wycobar.hegmark.render.FeatureRendererRegistry;
+import dev.wycobar.hegmark.render.LandFeatureRenderer;
 import dev.wycobar.hegmark.render.OrbitCamera;
 import dev.wycobar.hegmark.render.PoleMarkerRenderer;
 
@@ -58,18 +60,27 @@ public class Main extends ApplicationAdapter {
         planet = new PlanetModel("Rinn", 5_994_000.0, 5_994_000.0, 0.0, 0x48a9dL);
         grid = new H3PlanetGrid();
         InMemoryFeatureValueStore store = new InMemoryFeatureValueStore();
+
         FeatureChangeBus changeBus = new FeatureChangeBus();
         ElevationFeature elevationFeature = new ElevationFeature(store, changeBus);
+        LandFeature landFeature = new LandFeature(elevationFeature);
+
         featureRegistry = new FeatureRegistry();
         featureRegistry.register(elevationFeature);
+        featureRegistry.register(landFeature);
+
         world = new Planet(planet, grid, featureRegistry, store, changeBus);
+
         FeatureRendererRegistry featureRenderers = new FeatureRendererRegistry();
         featureRenderers.register(elevationFeature, new ElevationFeatureRenderer());
+        featureRenderers.register(landFeature, new LandFeatureRenderer());
+        state.selectRenderer(featureRenderers.availableFeatures().getFirst().id());
+
         visibleCells = new VisibleCellSelector(grid);
         selectionProjector = new SelectionProjector(grid);
         surfaceRenderer = new CellSurfaceRenderer(world, elevationFeature, featureRenderers);
         poleMarkerRenderer = new PoleMarkerRenderer(planet);
-        ui = new DirectEditorUi(elevationFeature);
+        ui = new DirectEditorUi(elevationFeature, featureRenderers.availableFeatures());
         input = new EditorInputController(
             layout,
             state,
@@ -103,6 +114,7 @@ public class Main extends ApplicationAdapter {
         displayResolution = nextResolution;
         focusCell = nextFocus;
         if (rebuild) {
+            surfaceRenderer.selectFeature(state.activeRendererId());
             List<CellId> cells = visibleCells.select(focusCell, displayResolution);
             CellId displayedSelection = state.selectedCell()
                 .map(cell -> selectionProjector.atResolution(cell.id(), displayResolution))

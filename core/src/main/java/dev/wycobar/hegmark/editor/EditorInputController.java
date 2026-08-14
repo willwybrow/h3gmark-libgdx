@@ -60,7 +60,7 @@ public final class EditorInputController extends InputAdapter {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (screenX >= layout.liveWidth() && button == Input.Buttons.LEFT) {
             UiButton uiButton = ui.buttonAt(layout, state, screenX, screenY);
-            if (uiButton != null && uiButton.enabled()) handle(uiButton.action());
+            if (uiButton != null && uiButton.enabled()) handle(uiButton);
             return true;
         }
         if (screenX < layout.liveWidth() && button == Input.Buttons.RIGHT) {
@@ -163,8 +163,11 @@ public final class EditorInputController extends InputAdapter {
         }
     }
 
-    private void handle(UiAction action) {
-        switch (action) {
+    private void handle(UiButton button) {
+        switch (button.action()) {
+            case FEATURE_RENDERER -> {
+                if (state.selectRenderer(button.targetId())) rebuildRequested = true;
+            }
             case SELECT_TOOL -> state.setTool(EditorTool.SELECT);
             case FILL_GAPS_TOOL -> state.setTool(EditorTool.FILL_GAPS);
             case OVERWRITE_TOOL -> state.setTool(EditorTool.OVERWRITE);

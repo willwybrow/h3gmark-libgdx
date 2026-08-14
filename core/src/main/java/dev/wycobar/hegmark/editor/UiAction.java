@@ -1,6 +1,7 @@
 package dev.wycobar.hegmark.editor;
 
 public enum UiAction {
+    FEATURE_RENDERER,
     SELECT_TOOL,
     FILL_GAPS_TOOL,
     OVERWRITE_TOOL,

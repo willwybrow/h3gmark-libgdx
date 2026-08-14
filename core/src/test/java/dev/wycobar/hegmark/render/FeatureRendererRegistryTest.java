@@ -1,5 +1,6 @@
 package dev.wycobar.hegmark.render;
 
+import dev.wycobar.hegmark.feature.elevation.LandFeature;
 import dev.wycobar.hegmark.support.TestPlanetFactory;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,23 @@ class FeatureRendererRegistryTest {
 
         assertThrows(IllegalArgumentException.class, () ->
             registry.register(elevation, value -> new RgbColor(0.3f, 0.2f, 0.1f))
+        );
+    }
+
+    @Test
+    void exposesAvailableFeaturesInRegistrationOrder() {
+        var elevation = TestPlanetFactory.create().elevation();
+        var land = new LandFeature(elevation);
+        FeatureRendererRegistry registry = new FeatureRendererRegistry();
+        registry.register(elevation, new ElevationFeatureRenderer());
+        registry.register(land, new LandFeatureRenderer());
+
+        assertEquals(
+            java.util.List.of(
+                new RenderableFeature("elevation", "Elevation"),
+                new RenderableFeature("land", "Land")
+            ),
+            registry.availableFeatures()
         );
     }
 }

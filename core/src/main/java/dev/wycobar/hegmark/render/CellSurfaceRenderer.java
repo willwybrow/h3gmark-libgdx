@@ -39,8 +39,11 @@ public final class CellSurfaceRenderer implements Disposable {
         }
         """;
 
-    private final CellSurfaceMeshBuilder meshBuilder;
+    private final Planet world;
+    private final FeatureRendererRegistry featureRenderers;
     private final ShaderProgram shader;
+    private CellSurfaceMeshBuilder meshBuilder;
+    private String featureId;
     private Mesh fillMesh;
     private Mesh lineMesh;
     private int cellCount;
@@ -52,10 +55,18 @@ public final class CellSurfaceRenderer implements Disposable {
         Feature<T> feature,
         FeatureRendererRegistry featureRenderers
     ) {
-        meshBuilder = new CellSurfaceMeshBuilder(world, feature, featureRenderers);
+        this.world = world;
+        this.featureRenderers = featureRenderers;
+        selectFeature(feature);
         ShaderProgram.pedantic = false;
         shader = new ShaderProgram(VERTEX_SHADER, FRAGMENT_SHADER);
         if (!shader.isCompiled()) throw new IllegalStateException("Cell shader failed to compile: " + shader.getLog());
+    }
+
+    public boolean selectFeature(String featureId) {
+        if (featureId.equals(this.featureId)) return false;
+        selectFeature(featureRenderers.feature(featureId));
+        return true;
     }
 
     public void rebuild(List<CellId> cells, CellId selectedCell) {
@@ -67,6 +78,11 @@ public final class CellSurfaceRenderer implements Disposable {
 
     public int cellCount() {
         return cellCount;
+    }
+
+    private <T> void selectFeature(Feature<T> feature) {
+        meshBuilder = new CellSurfaceMeshBuilder(world, feature, featureRenderers);
+        featureId = feature.id();
     }
 
     public void render(Camera camera) {

@@ -10,12 +10,14 @@ import dev.wycobar.hegmark.feature.elevation.ElevationFeature;
 import dev.wycobar.hegmark.planet.Layer;
 import dev.wycobar.hegmark.planet.PlanetLatLon;
 import dev.wycobar.hegmark.planet.Cell;
+import dev.wycobar.hegmark.render.RenderableFeature;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class DirectEditorUi implements Disposable {
     private final ElevationFeature elevationFeature;
+    private final List<RenderableFeature> renderableFeatures;
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final SpriteBatch batch = new SpriteBatch();
     private final BitmapFont font = new BitmapFont();
@@ -23,9 +25,11 @@ public final class DirectEditorUi implements Disposable {
     private Layer displayResolution = Layer.COUNTRY;
 
     public DirectEditorUi(
-        ElevationFeature elevationFeature
+        ElevationFeature elevationFeature,
+        List<RenderableFeature> renderableFeatures
     ) {
         this.elevationFeature = elevationFeature;
+        this.renderableFeatures = List.copyOf(renderableFeatures);
         font.getData().setScale(1.0f);
     }
 
@@ -36,22 +40,39 @@ public final class DirectEditorUi implements Disposable {
         float quarter = (width - 18.0f) / 4.0f;
         boolean editable = elevationFeature.isSettableAt(displayResolution);
         List<UiButton> buttons = new ArrayList<>();
-        buttons.add(button(UiAction.SELECT_TOOL, "Select", x, 38, quarter, state.tool() == EditorTool.SELECT, true));
-        buttons.add(button(UiAction.FILL_GAPS_TOOL, "Fill", x + quarter + 6, 38, quarter, state.tool() == EditorTool.FILL_GAPS, editable));
-        buttons.add(button(UiAction.OVERWRITE_TOOL, "Overwrite", x + (quarter + 6) * 2, 38, quarter, state.tool() == EditorTool.OVERWRITE, editable));
-        buttons.add(button(UiAction.ERASE_TOOL, "Erase", x + (quarter + 6) * 3, 38, quarter, state.tool() == EditorTool.ERASE, editable));
-
         float half = (width - 6.0f) / 2.0f;
-        buttons.add(button(UiAction.ELEVATION_DEEP, "-1500 m", x, 86, half, state.paintElevationMeters() == -1_500.0, true));
-        buttons.add(button(UiAction.ELEVATION_SEA, "0 m", x + half + 6, 86, half, state.paintElevationMeters() == 0.0, true));
-        buttons.add(button(UiAction.ELEVATION_LOW, "+500 m", x, 122, half, state.paintElevationMeters() == 500.0, true));
-        buttons.add(button(UiAction.ELEVATION_HIGH, "+2000 m", x + half + 6, 122, half, state.paintElevationMeters() == 2_000.0, true));
-        buttons.add(button(UiAction.DETAIL_LESS, "Zoom out", x, 164, half, false, true));
-        buttons.add(button(UiAction.DETAIL_MORE, "Zoom in", x + half + 6, 164, half, false, true));
-        buttons.add(button(UiAction.ROTATE_LEFT, "Rotate left", x, 200, half, false, true));
-        buttons.add(button(UiAction.ROTATE_RIGHT, "Rotate right", x + half + 6, 200, half, false, true));
-        buttons.add(button(UiAction.ROTATE_UP, "Rotate up", x, 236, half, false, true));
-        buttons.add(button(UiAction.ROTATE_DOWN, "Rotate down", x + half + 6, 236, half, false, true));
+        for (int index = 0; index < renderableFeatures.size(); index++) {
+            RenderableFeature feature = renderableFeatures.get(index);
+            float rendererX = x + (index % 2) * (half + 6.0f);
+            float rendererY = 38.0f + (index / 2) * 36.0f;
+            buttons.add(new UiButton(
+                UiAction.FEATURE_RENDERER,
+                feature.id(),
+                feature.name(),
+                new UiRect(rendererX, rendererY, half, 30.0f),
+                feature.id().equals(state.activeRendererId()),
+                true
+            ));
+        }
+
+        float rendererRows = Math.max(1, (renderableFeatures.size() + 1) / 2);
+        float toolY = 44.0f + rendererRows * 36.0f;
+        buttons.add(button(UiAction.SELECT_TOOL, "Select", x, toolY, quarter, state.tool() == EditorTool.SELECT, true));
+        buttons.add(button(UiAction.FILL_GAPS_TOOL, "Fill", x + quarter + 6, toolY, quarter, state.tool() == EditorTool.FILL_GAPS, editable));
+        buttons.add(button(UiAction.OVERWRITE_TOOL, "Overwrite", x + (quarter + 6) * 2, toolY, quarter, state.tool() == EditorTool.OVERWRITE, editable));
+        buttons.add(button(UiAction.ERASE_TOOL, "Erase", x + (quarter + 6) * 3, toolY, quarter, state.tool() == EditorTool.ERASE, editable));
+
+        float paintY = toolY + 48.0f;
+        buttons.add(button(UiAction.ELEVATION_DEEP, "-1500 m", x, paintY, half, state.paintElevationMeters() == -1_500.0, true));
+        buttons.add(button(UiAction.ELEVATION_SEA, "0 m", x + half + 6, paintY, half, state.paintElevationMeters() == 0.0, true));
+        buttons.add(button(UiAction.ELEVATION_LOW, "+500 m", x, paintY + 36, half, state.paintElevationMeters() == 500.0, true));
+        buttons.add(button(UiAction.ELEVATION_HIGH, "+2000 m", x + half + 6, paintY + 36, half, state.paintElevationMeters() == 2_000.0, true));
+        buttons.add(button(UiAction.DETAIL_LESS, "Zoom out", x, paintY + 78, half, false, true));
+        buttons.add(button(UiAction.DETAIL_MORE, "Zoom in", x + half + 6, paintY + 78, half, false, true));
+        buttons.add(button(UiAction.ROTATE_LEFT, "Rotate left", x, paintY + 114, half, false, true));
+        buttons.add(button(UiAction.ROTATE_RIGHT, "Rotate right", x + half + 6, paintY + 114, half, false, true));
+        buttons.add(button(UiAction.ROTATE_UP, "Rotate up", x, paintY + 150, half, false, true));
+        buttons.add(button(UiAction.ROTATE_DOWN, "Rotate down", x + half + 6, paintY + 150, half, false, true));
         return List.copyOf(buttons);
     }
 
@@ -71,8 +92,7 @@ public final class DirectEditorUi implements Disposable {
         batch.begin();
         font.setColor(Color.WHITE);
         float x = layout.panelX() + Math.min(18.0f, layout.panelWidth() / 8.0f);
-        draw("HEGMARK / ELEVATION", x, layout.height() - 20);
-        draw("Paint value", x, layout.height() - 78);
+        draw("HEGMARK / FEATURES", x, layout.height() - 20);
         draw("View: grid res " + displayResolution + "  |  " + renderedCells + " cells", x, layout.height() - 286);
         draw(
             "View " + elevationFeature.viewableRange().minimum() + "-" + elevationFeature.viewableRange().maximum()

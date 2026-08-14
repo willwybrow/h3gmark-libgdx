@@ -5,9 +5,20 @@ import dev.wycobar.hegmark.support.TestPlanetFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EditorStateTest {
+    @Test
+    void rendererSelectionReportsChanges() {
+        EditorState state = new EditorState();
+
+        assertTrue(state.selectRenderer("elevation"));
+        assertFalse(state.selectRenderer("elevation"));
+        assertTrue(state.selectRenderer("land"));
+        assertEquals("land", state.activeRendererId());
+    }
+
     @Test
     void overwriteConfirmationIsScopedToCellAndPaintValue() {
         EditorState state = new EditorState();

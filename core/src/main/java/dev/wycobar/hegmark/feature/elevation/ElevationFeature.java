@@ -21,13 +21,11 @@ public final class ElevationFeature extends StoredFeature<Double> {
     private static final ResolutionRange VIEWABLE = Layer.anywhere();
     private static final ResolutionRange SETTABLE = Layer.anywhere();
 
-    private final LandFeature landFeature;
     private final FeatureChangeBus changes;
 
     public ElevationFeature(FeatureValueStore featureValueStore, FeatureChangeBus changes) {
         super(featureValueStore);
         this.changes = changes;
-        landFeature = new LandFeature(this);
     }
 
     @Override
@@ -107,11 +105,6 @@ public final class ElevationFeature extends StoredFeature<Double> {
     @Override
     public Optional<ResolutionRange> settableRange() {
         return Optional.of(SETTABLE);
-    }
-
-    @Override
-    protected Set<ComputedFeature<?>> additionalFeatures() {
-        return Set.of(landFeature);
     }
 
     private Double explicitValueAt(Cell cell) {

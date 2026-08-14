@@ -8,6 +8,7 @@ public final class EditorState {
     private Cell selectedCell;
     private EditorTool tool = EditorTool.SELECT;
     private double paintElevationMeters = 500.0;
+    private String activeRendererId;
     private String message = "Select a cell in the live view";
     private Cell pendingOverwriteCell;
     private double pendingOverwriteValue;
@@ -34,6 +35,18 @@ public final class EditorState {
 
     public double paintElevationMeters() {
         return paintElevationMeters;
+    }
+
+    public String activeRendererId() {
+        return activeRendererId;
+    }
+
+    public boolean selectRenderer(String rendererId) {
+        if (rendererId.equals(activeRendererId)) return false;
+        activeRendererId = rendererId;
+        clearOverwriteConfirmation();
+        message = "Viewing " + rendererId;
+        return true;
     }
 
     public void setPaintElevationMeters(double paintElevationMeters) {

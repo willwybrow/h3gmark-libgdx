@@ -18,12 +18,7 @@ public final class FeatureRegistry {
         return feature;
     }
 
-    public void register(ComputedFeature<?> feature) {
+    public void register(Feature<?> feature) {
         features.putIfAbsent(feature.id(), feature);
-    }
-
-    public void register(StoredFeature<?> feature) {
-        features.putIfAbsent(feature.id(), feature);
-        feature.additionalFeatures().forEach(this::register);
     }
 }

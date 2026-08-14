@@ -12,7 +12,7 @@ public final class LandFeature extends ComputedFeature<Boolean> {
     private static final ResolutionRange VIEWABLE = Layer.anywhere();
     private final ElevationFeature elevationFeature;
 
-    LandFeature(ElevationFeature computedFrom) {
+    public LandFeature(ElevationFeature computedFrom) {
         super(computedFrom);
         this.elevationFeature = computedFrom;
     }
